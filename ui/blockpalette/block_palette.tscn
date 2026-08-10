@@ -10,8 +10,8 @@
 [ext_resource type="PackedScene" uid="uid://bm2o5xqsjvu4e" path="res://blocks/logistic/dump_container.tscn" id="10_dump"]
 [ext_resource type="PackedScene" uid="uid://ctxya1ewcu5qr" path="res://blocks/industrial/drill.tscn" id="11_l8ndj"]
 [ext_resource type="PackedScene" uid="uid://cxis8u1udc8hr" path="res://blocks/weapon/KwK_43.tscn" id="11_ulxes"]
-[ext_resource type="PackedScene" path="res://blocks/control/manual_cockpit.tscn" id="12_cockpit"]
-[ext_resource type="PackedScene" uid="uid://yrt7gi14l6ij" path="res://blocks/structural/workshop.tscn" id="13_workshop"]
+[ext_resource type="PackedScene" uid="uid://dk8l6ntdbkgbh" path="res://blocks/control/manual_cockpit.tscn" id="12_cockpit"]
+[ext_resource type="PackedScene" uid="uid://yrt7gi14l6ij" path="res://blocks/structural/vehicle_bay.tscn" id="13_workshop"]
 
 [node name="BlockPalette" type="Control" unique_id=664557349]
 layout_mode = 3

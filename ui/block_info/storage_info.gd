@@ -1,51 +1,55 @@
 class_name StorageBlockInfoSection
-extends VBoxContainer
+extends BlockInfoSection
 
-var target_block: Block
+@onready var contents_list: VBoxContainer = (
+	$ReadOnly/ContentsScroll/ContentsList
+)
+@onready var capacity_bar: ProgressBar = $ReadOnly/CapacityBar
+@onready var capacity_label: Label = $ReadOnly/CapacityLabel
+@onready var allowed_list: VBoxContainer = (
+	$Configurable/AllowedScroll/AllowedList
+)
+@onready var add_button: Button = $Configurable/AddButton
+@onready var add_popup: PopupPanel = $Configurable/AddPopup
+@onready var add_tree: Tree = (
+	$Configurable/AddPopup/Margin/VBox/Tree
+)
 
-@onready var contents_list: VBoxContainer = $ContentsScroll/ContentsList
-@onready var capacity_bar: ProgressBar = $CapacityBar
-@onready var capacity_label: Label = $CapacityLabel
-@onready var allowed_list: VBoxContainer = $AllowedScroll/AllowedList
-@onready var add_button: Button = $AddButton
-@onready var add_popup: PopupPanel = $AddPopup
-@onready var add_tree: Tree = $AddPopup/Margin/VBox/Tree
 
-func bind_block(block: Block) -> void:
-	unbind_block()
-	if not block is ItemStorage and not block is LiquidStorage:
-		return
-	target_block = block
+func _accepts_block(block: Block) -> bool:
+	return block is ItemStorage or block is LiquidStorage
+
+
+func _bind_target() -> void:
 	if target_block is ItemStorage:
 		var storage := target_block as ItemStorage
-		storage.contents_changed.connect(_refresh)
-		storage.allowed_items_changed.connect(_refresh)
+		storage.contents_changed.connect(refresh)
+		storage.allowed_items_changed.connect(refresh)
 	else:
 		var storage := target_block as LiquidStorage
-		storage.contents_changed.connect(_refresh)
-		storage.allowed_items_changed.connect(_refresh)
-	_refresh()
+		storage.contents_changed.connect(refresh)
+		storage.allowed_items_changed.connect(refresh)
 
-func unbind_block() -> void:
+
+func _unbind_target() -> void:
 	add_popup.hide()
 	if not is_instance_valid(target_block):
-		target_block = null
 		return
 	if target_block is ItemStorage:
 		var storage := target_block as ItemStorage
-		if storage.contents_changed.is_connected(_refresh):
-			storage.contents_changed.disconnect(_refresh)
-		if storage.allowed_items_changed.is_connected(_refresh):
-			storage.allowed_items_changed.disconnect(_refresh)
+		if storage.contents_changed.is_connected(refresh):
+			storage.contents_changed.disconnect(refresh)
+		if storage.allowed_items_changed.is_connected(refresh):
+			storage.allowed_items_changed.disconnect(refresh)
 	elif target_block is LiquidStorage:
 		var storage := target_block as LiquidStorage
-		if storage.contents_changed.is_connected(_refresh):
-			storage.contents_changed.disconnect(_refresh)
-		if storage.allowed_items_changed.is_connected(_refresh):
-			storage.allowed_items_changed.disconnect(_refresh)
-	target_block = null
+		if storage.contents_changed.is_connected(refresh):
+			storage.contents_changed.disconnect(refresh)
+		if storage.allowed_items_changed.is_connected(refresh):
+			storage.allowed_items_changed.disconnect(refresh)
 
-func _refresh() -> void:
+
+func _refresh_details() -> void:
 	if not is_instance_valid(target_block):
 		return
 	_clear_container(contents_list)

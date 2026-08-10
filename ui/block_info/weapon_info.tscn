@@ -1,66 +1,87 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://dkqdu1tx3cksh"]
 
+[ext_resource type="Theme" uid="uid://dhnsjii6e8fe4" path="res://assets/resources/tooltip_theme.tres" id="1_13105"]
 [ext_resource type="Script" uid="uid://du580dy027nvs" path="res://ui/block_info/weapon_info.gd" id="1_script"]
 [ext_resource type="Theme" uid="uid://djb1bkq82a1wy" path="res://assets/resources/UI_theme.tres" id="2_theme"]
 
-[node name="WeaponBlockInfo" type="VBoxContainer"]
+[node name="WeaponBlockInfo" type="VBoxContainer" unique_id=1134146678]
+theme = ExtResource("1_13105")
 theme_override_constants/separation = 6
 script = ExtResource("1_script")
 
-[node name="StateRow" type="HBoxContainer" parent="."]
+[node name="ReadOnly" type="VBoxContainer" parent="." unique_id=498637330]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 6
+
+[node name="Summary" type="Label" parent="ReadOnly" unique_id=104332259]
+layout_mode = 2
+text = "HP: 0 / 0"
+
+[node name="StateRow" type="HBoxContainer" parent="ReadOnly" unique_id=1528663874]
 layout_mode = 2
 
-[node name="State" type="Label" parent="StateRow"]
+[node name="State" type="Label" parent="ReadOnly/StateRow" unique_id=966793853]
 layout_mode = 2
 text = "Empty"
 
-[node name="Icon" type="TextureRect" parent="StateRow"]
+[node name="Icon" type="TextureRect" parent="ReadOnly/StateRow" unique_id=278060138]
 custom_minimum_size = Vector2(24, 24)
 layout_mode = 2
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Ammo" type="Label" parent="StateRow"]
+[node name="Ammo" type="Label" parent="ReadOnly/StateRow" unique_id=1202025300]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="SelectionTitle" type="Label" parent="."]
+[node name="SelectionTitle" type="Label" parent="ReadOnly" unique_id=417598816]
 layout_mode = 2
 text = "Ammo selection:"
 
-[node name="SelectionRow" type="HBoxContainer" parent="."]
+[node name="SelectionRow" type="HBoxContainer" parent="ReadOnly" unique_id=522351780]
 layout_mode = 2
 
-[node name="Icon" type="TextureRect" parent="SelectionRow"]
+[node name="Icon" type="TextureRect" parent="ReadOnly/SelectionRow" unique_id=845086030]
 custom_minimum_size = Vector2(24, 24)
 layout_mode = 2
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Label" type="Label" parent="SelectionRow"]
+[node name="Label" type="Label" parent="ReadOnly/SelectionRow" unique_id=974299770]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "First available"
 
-[node name="ReloadBar" type="ProgressBar" parent="."]
+[node name="ReloadBar" type="ProgressBar" parent="ReadOnly" unique_id=818419752]
 custom_minimum_size = Vector2(0, 18)
 layout_mode = 2
-max_value = 100.0
 show_percentage = false
 
-[node name="AmmoButton" type="Button" parent="."]
+[node name="ConfigSeparator" type="HSeparator" parent="." unique_id=2012291087]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Configurable" type="VBoxContainer" parent="." unique_id=317791333]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="AmmoButton" type="Button" parent="Configurable" unique_id=684656152]
 layout_mode = 2
 text = "Choose ammunition"
 
-[node name="AmmoPopup" type="PopupPanel" parent="."]
+[node name="AmmoPopup" type="PopupPanel" parent="Configurable" unique_id=1394148915]
 size = Vector2i(340, 300)
 theme = ExtResource("2_theme")
 
-[node name="Margin" type="MarginContainer" parent="AmmoPopup"]
-layout_mode = 1
+[node name="Margin" type="MarginContainer" parent="Configurable/AmmoPopup" unique_id=1060165992]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = 4.0
+offset_top = 4.0
+offset_right = -4.0
+offset_bottom = -4.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/margin_left = 12
@@ -68,18 +89,18 @@ theme_override_constants/margin_top = 12
 theme_override_constants/margin_right = 12
 theme_override_constants/margin_bottom = 12
 
-[node name="VBox" type="VBoxContainer" parent="AmmoPopup/Margin"]
+[node name="VBox" type="VBoxContainer" parent="Configurable/AmmoPopup/Margin" unique_id=1579069541]
 layout_mode = 2
 
-[node name="Title" type="Label" parent="AmmoPopup/Margin/VBox"]
+[node name="Title" type="Label" parent="Configurable/AmmoPopup/Margin/VBox" unique_id=734560467]
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
 text = "Choose ammunition"
 
-[node name="Tree" type="Tree" parent="AmmoPopup/Margin/VBox"]
+[node name="Tree" type="Tree" parent="Configurable/AmmoPopup/Margin/VBox" unique_id=540400428]
 layout_mode = 2
 size_flags_vertical = 3
 hide_root = true
 
-[connection signal="pressed" from="AmmoButton" to="." method="_on_ammo_button_pressed"]
-[connection signal="item_selected" from="AmmoPopup/Margin/VBox/Tree" to="." method="_on_ammo_tree_item_selected"]
+[connection signal="pressed" from="Configurable/AmmoButton" to="." method="_on_ammo_button_pressed"]
+[connection signal="item_selected" from="Configurable/AmmoPopup/Margin/VBox/Tree" to="." method="_on_ammo_tree_item_selected"]

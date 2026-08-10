@@ -1,0 +1,22 @@
+[gd_resource type="Theme" format=3 uid="uid://dhnsjii6e8fe4"]
+
+[ext_resource type="FontFile" uid="uid://bqm2whs604lm4" path="res://assets/fonts/nokiafc22.ttf" id="1_d4jut"]
+[ext_resource type="Texture2D" uid="uid://cbeoshr0k0075" path="res://assets/style_tex.png" id="2_gbdfo"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_nevc4"]
+atlas = ExtResource("2_gbdfo")
+region = Rect2(192, 48, 48, 48)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_csg11"]
+texture = SubResource("AtlasTexture_nevc4")
+texture_margin_left = 8.0
+texture_margin_top = 8.0
+texture_margin_right = 8.0
+texture_margin_bottom = 8.0
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
+
+[resource]
+Button/fonts/font = ExtResource("1_d4jut")
+Label/fonts/font = ExtResource("1_d4jut")
+Panel/styles/panel = SubResource("StyleBoxTexture_csg11")

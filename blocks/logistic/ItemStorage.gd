@@ -21,10 +21,6 @@ func _ready() -> void:
 	add_item("PZGR88mm", 20)
 
 
-func has_information_panel() -> bool:
-	return true
-
-
 func get_union_key() -> String:
 	return "%s:item:%d" % [scene_file_path, storage_kind]
 

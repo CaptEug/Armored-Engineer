@@ -6,21 +6,38 @@
 theme_override_constants/separation = 10
 script = ExtResource("1_script")
 
-[node name="PowerRow" type="HBoxContainer" parent="."]
+[node name="ReadOnly" type="VBoxContainer" parent="."]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 6
+
+[node name="Summary" type="Label" parent="ReadOnly"]
+layout_mode = 2
+text = "HP: 0 / 0"
+
+[node name="PowerRow" type="HBoxContainer" parent="ReadOnly"]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="Title" type="Label" parent="PowerRow"]
+[node name="Title" type="Label" parent="ReadOnly/PowerRow"]
 layout_mode = 2
 text = "Power supply"
 
-[node name="Percentage" type="Label" parent="PowerRow"]
+[node name="Percentage" type="Label" parent="ReadOnly/PowerRow"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.85, 0.12, 0.12, 1)
 text = "0%"
 mouse_filter = 2
 
-[node name="StorageFull" type="Label" parent="."]
+[node name="StorageFull" type="Label" parent="ReadOnly"]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.62, 0.08, 1)
 text = "Storage full"
+
+[node name="ConfigSeparator" type="HSeparator" parent="."]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Configurable" type="VBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 8

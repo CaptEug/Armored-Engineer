@@ -68,18 +68,12 @@ texture_margin_bottom = 10.0
 axis_stretch_horizontal = 1
 axis_stretch_vertical = 1
 
-[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_edc7y"]
-load_path = "res://.godot/imported/icons.png-5c52b2a8ef046341f695bea1654b31ed.ctex"
-
 [sub_resource type="AtlasTexture" id="AtlasTexture_0j3n0"]
-atlas = SubResource("CompressedTexture2D_edc7y")
+atlas = ExtResource("3_vwcpp")
 region = Rect2(16, 0, 16, 16)
 
-[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_vrn5i"]
-load_path = "res://.godot/imported/icons.png-5c52b2a8ef046341f695bea1654b31ed.ctex"
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_rxu7l"]
-atlas = SubResource("CompressedTexture2D_vrn5i")
+[sub_resource type="AtlasTexture" id="AtlasTexture_vrn5i"]
+atlas = ExtResource("3_vwcpp")
 region = Rect2(0, 0, 16, 16)
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_2ue16"]
@@ -355,7 +349,7 @@ Button/styles/hover = SubResource("StyleBoxTexture_p64gu")
 Button/styles/normal = SubResource("StyleBoxTexture_xxub0")
 Button/styles/pressed = SubResource("StyleBoxTexture_7qj07")
 CheckButton/icons/checked = SubResource("AtlasTexture_0j3n0")
-CheckButton/icons/unchecked = SubResource("AtlasTexture_rxu7l")
+CheckButton/icons/unchecked = SubResource("AtlasTexture_vrn5i")
 CheckButton/styles/disabled = SubResource("StyleBoxEmpty_2ue16")
 CheckButton/styles/focus = SubResource("StyleBoxEmpty_lhmk8")
 CheckButton/styles/hover = SubResource("StyleBoxEmpty_e8i22")

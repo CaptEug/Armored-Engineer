@@ -16,10 +16,6 @@ func _ready() -> void:
 	add_liquid("petroleum", 50)
 
 
-func has_information_panel() -> bool:
-	return true
-
-
 func get_union_key() -> String:
 	return "%s:liquid" % scene_file_path
 

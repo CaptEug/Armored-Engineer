@@ -52,14 +52,6 @@ func _physics_process(delta: float) -> void:
 		_damage_target(target, dmg)
 
 
-func has_information_panel() -> bool:
-	return true
-
-
-func get_information_panel_key() -> StringName:
-	return &"drill"
-
-
 func is_power_consumer() -> bool:
 	return true
 

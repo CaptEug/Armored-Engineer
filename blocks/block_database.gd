@@ -5,6 +5,12 @@ const CLASS_NATURAL := "natural"
 const CLASS_CONSTRUCTED := "constructed"
 const HOST_WORLD := "world"
 const HOST_VEHICLE := "vehicle"
+const INFO_GENERIC := "res://ui/block_info/block_info_section.tscn"
+const INFO_STORAGE := "res://ui/block_info/storage_info.tscn"
+const INFO_WEAPON := "res://ui/block_info/weapon_info.tscn"
+const INFO_CONTROL := "res://ui/block_info/control_info.tscn"
+const INFO_DRILL := "res://ui/block_info/drill_info.tscn"
+const INFO_VEHICLE_BAY := "res://ui/block_info/vehiclebay_info.tscn"
 
 # Integer block IDs are the compact runtime/save identity. block_name is the
 # stable String identity used by developer-authored data.
@@ -14,6 +20,7 @@ var blocks := {
 		"block_class": CLASS_CONSTRUCTED,
 		"allowed_hosts": [HOST_VEHICLE],
 		"scene_path": "res://blocks/structural/structual_frame.tscn",
+		"info_section_path": INFO_GENERIC,
 		"world_functional": false,
 		"size": Vector2i(1, 1),
 		"rotatable": false,
@@ -31,6 +38,7 @@ var blocks := {
 		"block_class": CLASS_CONSTRUCTED,
 		"allowed_hosts": [HOST_WORLD, HOST_VEHICLE],
 		"scene_path": "res://blocks/logistic/liquid_tank.tscn",
+		"info_section_path": INFO_STORAGE,
 		"world_functional": true,
 		"size": Vector2i(1, 1),
 		"rotatable": true,
@@ -46,6 +54,7 @@ var blocks := {
 		"block_class": CLASS_CONSTRUCTED,
 		"allowed_hosts": [HOST_WORLD, HOST_VEHICLE],
 		"scene_path": "res://blocks/logistic/cargo_box.tscn",
+		"info_section_path": INFO_STORAGE,
 		"world_functional": true,
 		"size": Vector2i(1, 1),
 		"rotatable": true,
@@ -61,6 +70,7 @@ var blocks := {
 		"block_class": CLASS_CONSTRUCTED,
 		"allowed_hosts": [HOST_WORLD, HOST_VEHICLE],
 		"scene_path": "res://blocks/mobility/powerpack/v_2.tscn",
+		"info_section_path": INFO_GENERIC,
 		"world_functional": true,
 		"size": Vector2i(1, 2),
 		"rotatable": true,
@@ -76,6 +86,7 @@ var blocks := {
 		"block_class": CLASS_CONSTRUCTED,
 		"allowed_hosts": [HOST_VEHICLE],
 		"scene_path": "res://blocks/mobility/track/metal_track.tscn",
+		"info_section_path": INFO_GENERIC,
 		"world_functional": false,
 		"size": Vector2i(1, 1),
 		"rotatable": true,
@@ -91,6 +102,7 @@ var blocks := {
 		"block_class": CLASS_CONSTRUCTED,
 		"allowed_hosts": [HOST_WORLD, HOST_VEHICLE],
 		"scene_path": "res://blocks/weapon/KwK_43.tscn",
+		"info_section_path": INFO_WEAPON,
 		"world_functional": true,
 		"size": Vector2i(1, 8),
 		"rotatable": true,
@@ -106,6 +118,7 @@ var blocks := {
 		"block_class": CLASS_CONSTRUCTED,
 		"allowed_hosts": [HOST_WORLD, HOST_VEHICLE],
 		"scene_path": "res://blocks/logistic/dump_container.tscn",
+		"info_section_path": INFO_STORAGE,
 		"world_functional": true,
 		"size": Vector2i(1, 1),
 		"rotatable": true,
@@ -121,6 +134,7 @@ var blocks := {
 		"block_class": CLASS_CONSTRUCTED,
 		"allowed_hosts": [HOST_WORLD, HOST_VEHICLE],
 		"scene_path": "res://blocks/control/manual_cockpit.tscn",
+		"info_section_path": INFO_CONTROL,
 		"world_functional": true,
 		"size": Vector2i(1, 1),
 		"rotatable": true,
@@ -136,6 +150,7 @@ var blocks := {
 		"block_class": CLASS_NATURAL,
 		"allowed_hosts": [HOST_WORLD],
 		"scene_path": "res://blocks/natural/sandstone.tscn",
+		"info_section_path": INFO_GENERIC,
 		"world_functional": false,
 		"size": Vector2i(1, 1),
 		"rotatable": false,
@@ -153,6 +168,7 @@ var blocks := {
 		"block_class": CLASS_NATURAL,
 		"allowed_hosts": [HOST_WORLD],
 		"scene_path": "res://blocks/natural/hematite.tscn",
+		"info_section_path": INFO_GENERIC,
 		"world_functional": false,
 		"size": Vector2i(1, 1),
 		"rotatable": false,
@@ -168,6 +184,7 @@ var blocks := {
 	11: {
 		"block_name": "Crude Oil",
 		"phase": "liquid",
+		"info_section_path": INFO_GENERIC,
 		"mass": 1000.0,
 		"mining_yield": "crude_oil",
 		"color": Color(0.149, 0.078, 0.310),
@@ -175,6 +192,7 @@ var blocks := {
 	12: {
 		"block_name": "Sandstone Ground",
 		"phase": "ground",
+		"info_section_path": INFO_GENERIC,
 		"color": Color(0.533, 0.251, 0.176),
 	},
 	13: {
@@ -182,6 +200,7 @@ var blocks := {
 		"block_class": CLASS_CONSTRUCTED,
 		"allowed_hosts": [HOST_VEHICLE],
 		"scene_path": "res://blocks/industrial/drill.tscn",
+		"info_section_path": INFO_DRILL,
 		"world_functional": false,
 		"size": Vector2i(2, 3),
 		"rotatable": true,
@@ -196,7 +215,8 @@ var blocks := {
 		"block_name": "Vehicle Bay",
 		"block_class": CLASS_CONSTRUCTED,
 		"allowed_hosts": [HOST_WORLD],
-		"scene_path": "res://blocks/structural/workshop.tscn",
+		"scene_path": "res://blocks/structural/vehicle_bay.tscn",
+		"info_section_path": INFO_VEHICLE_BAY,
 		"world_functional": true,
 		"size": Vector2i(2, 2),
 		"rotatable": false,
@@ -212,6 +232,7 @@ var blocks := {
 var _name_to_id: Dictionary = {}
 var _scene_to_id: Dictionary = {}
 var _scene_cache: Dictionary = {}
+var _info_section_cache: Dictionary = {}
 var _indexes_ready := false
 
 
@@ -223,6 +244,7 @@ func rebuild_indexes() -> void:
 	_name_to_id.clear()
 	_scene_to_id.clear()
 	_scene_cache.clear()
+	_info_section_cache.clear()
 	for block_id: int in blocks:
 		var definition: Dictionary = blocks[block_id]
 		var block_name := str(definition.get("block_name", ""))
@@ -260,6 +282,19 @@ func get_scene(block_id: int) -> PackedScene:
 		return null
 	var scene := load(scene_path) as PackedScene
 	_scene_cache[block_id] = scene
+	return scene
+
+
+func get_info_section_scene(block_id: int) -> PackedScene:
+	var scene_path := str(
+		get_block(block_id).get("info_section_path", INFO_GENERIC)
+	)
+	if scene_path.is_empty():
+		return null
+	if _info_section_cache.has(scene_path):
+		return _info_section_cache[scene_path] as PackedScene
+	var scene := load(scene_path) as PackedScene
+	_info_section_cache[scene_path] = scene
 	return scene
 
 
@@ -368,6 +403,18 @@ func validate_database(tile_set: TileSet = null) -> PackedStringArray:
 			names[block_name] = block_id
 		if not definition.get("color", null) is Color:
 			errors.append("Block %s has no valid color." % block_name)
+		var info_section_path := str(
+			definition.get("info_section_path", "")
+		)
+		if info_section_path.is_empty():
+			errors.append(
+				"Block %s has no information section." % block_name
+			)
+		elif not ResourceLoader.exists(info_section_path):
+			errors.append(
+				"Block %s has missing information section %s."
+				% [block_name, info_section_path]
+			)
 		if is_liquid(block_id):
 			if get_default_liquid_mass(block_id) <= 0.0:
 				errors.append(

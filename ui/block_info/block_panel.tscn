@@ -1,15 +1,13 @@
 [gd_scene format=3 uid="uid://uo65hy70wnnd"]
 
+[ext_resource type="Theme" uid="uid://dhnsjii6e8fe4" path="res://assets/resources/tooltip_theme.tres" id="1_ol4v2"]
 [ext_resource type="Script" uid="uid://pjqm0h0bw1vj" path="res://ui/block_info/block_panel.gd" id="1_panel"]
-[ext_resource type="Theme" uid="uid://djb1bkq82a1wy" path="res://assets/resources/UI_theme.tres" id="2_theme"]
 
 [node name="BlockPanel" type="Panel" unique_id=351814507 groups=["block_information_panel"]]
 clip_contents = true
-offset_left = 24.0
-offset_top = 24.0
-offset_right = 384.0
-offset_bottom = 174.0
-theme = ExtResource("2_theme")
+offset_right = 360.0
+offset_bottom = 150.0
+theme = ExtResource("1_ol4v2")
 script = ExtResource("1_panel")
 
 [node name="Margin" type="MarginContainer" parent="." unique_id=861211448]
@@ -45,21 +43,14 @@ custom_minimum_size = Vector2(32, 32)
 layout_mode = 2
 text = "×"
 
-[node name="Status" type="Label" parent="Margin/VBox" unique_id=2120427212]
-layout_mode = 2
-text = "HP: 0 / 0"
-
-[node name="Separator" type="HSeparator" parent="Margin/VBox" unique_id=306156423]
-layout_mode = 2
-mouse_filter = 2
-
-[node name="DetailScroll" type="ScrollContainer" parent="Margin/VBox" unique_id=2018747467]
+[node name="SectionScroll" type="ScrollContainer" parent="Margin/VBox" unique_id=2018747467]
 layout_mode = 2
 size_flags_vertical = 3
 horizontal_scroll_mode = 0
 
-[node name="DetailHost" type="VBoxContainer" parent="Margin/VBox/DetailScroll" unique_id=1498561636]
+[node name="SectionHost" type="VBoxContainer" parent="Margin/VBox/SectionScroll" unique_id=1498561636]
 layout_mode = 2
 size_flags_horizontal = 3
+mouse_filter = 2
 
 [connection signal="pressed" from="Margin/VBox/Header/CloseButton" to="." method="close_panel"]

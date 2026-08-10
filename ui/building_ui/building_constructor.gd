@@ -392,7 +392,7 @@ func _get_placement_report(
 	var construction_range := (
 		construction_range_tiles * Globals.TILE_SIZE
 	)
-	if not ConstructionSupport.has_world_construction_support(
+	if not ConstructionSupport.has_building_construction_support(
 		get_tree(),
 		build_position,
 		construction_range,
@@ -402,7 +402,7 @@ func _get_placement_report(
 		return result
 	var storages: Array[ItemStorage] = []
 	if not cost.is_empty():
-		storages = ConstructionSupport.get_world_candidate_storages(
+		storages = ConstructionSupport.get_building_construction_storages(
 			get_tree(),
 			build_position,
 			construction_range,

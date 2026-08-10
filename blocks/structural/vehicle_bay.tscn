@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://yrt7gi14l6ij"]
 
-[ext_resource type="Script" uid="uid://sf2it1e7oic6" path="res://blocks/structural/workshop.gd" id="1_workshop"]
+[ext_resource type="Script" uid="uid://sf2it1e7oic6" path="res://blocks/structural/vehicle_bay.gd" id="1_workshop"]
 [ext_resource type="Texture2D" uid="uid://bil354fniyca8" path="res://assets/blocks/workshop.png" id="2_workshop"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_docking"]

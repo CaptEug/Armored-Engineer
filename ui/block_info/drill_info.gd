@@ -1,5 +1,5 @@
 class_name DrillBlockInfoSection
-extends VBoxContainer
+extends BlockInfoSection
 
 const POWER_NONE := Color(0.85, 0.12, 0.12)
 const POWER_PARTIAL := Color(1.0, 0.62, 0.08)
@@ -7,29 +7,36 @@ const POWER_FULL := Color(0.18, 0.82, 0.24)
 
 var drill: Block
 
-@onready var power_percentage: Label = $PowerRow/Percentage
-@onready var storage_note: Label = $StorageFull
+@onready var power_percentage: Label = (
+	$ReadOnly/PowerRow/Percentage
+)
+@onready var storage_note: Label = $ReadOnly/StorageFull
 
 
-func bind_block(block: Block) -> void:
-	unbind_block()
-	if block.get_information_panel_key() != &"drill":
-		return
+func _accepts_block(block: Block) -> bool:
+	return (
+		is_instance_valid(block)
+		and block.has_signal("drill_status_changed")
+		and block.has_method("get_power_ratio")
+	)
+
+
+func _bind_target() -> void:
+	var block := target_block
 	drill = block
-	drill.connect("drill_status_changed", _refresh)
-	_refresh()
+	drill.connect("drill_status_changed", refresh)
 
 
-func unbind_block() -> void:
+func _unbind_target() -> void:
 	if (
 		is_instance_valid(drill)
-		and drill.is_connected("drill_status_changed", _refresh)
+		and drill.is_connected("drill_status_changed", refresh)
 	):
-		drill.disconnect("drill_status_changed", _refresh)
+		drill.disconnect("drill_status_changed", refresh)
 	drill = null
 
 
-func _refresh() -> void:
+func _refresh_details() -> void:
 	if not is_instance_valid(drill):
 		_set_power_percentage(0.0)
 		storage_note.hide()

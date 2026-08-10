@@ -46,10 +46,6 @@ var ammo_retry_time := 0.0
 const AMMO_RETRY_INTERVAL := 0.25
 
 
-func has_information_panel() -> bool:
-	return true
-
-
 func get_save_state() -> Dictionary:
 	var result := {
 		"state": int(state),

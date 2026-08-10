@@ -1,27 +1,26 @@
 class_name BlockPanel
 extends FloatingPanel
 
-const COMPACT_SIZE := Vector2(260.0, 82.0)
-const CURSOR_OFFSET := Vector2(16.0, 16.0)
+const COMPACT_WIDTH := 260.0
 const EXPANDED_WIDTH := 360.0
-const STORAGE_DETAIL := preload("res://ui/block_info/storage_info.tscn")
-const WEAPON_DETAIL := preload("res://ui/block_info/weapon_info.tscn")
-const CONTROL_DETAIL := preload("res://ui/block_info/control_info.tscn")
-const DRILL_DETAIL := preload("res://ui/block_info/drill_info.tscn")
-const VEHICLEBAY_DETAIL := preload("res://ui/block_info/vehiclebay_info.tscn")
+const CURSOR_OFFSET := Vector2(16.0, 16.0)
 
 var target_block: Block
 var hover_block: Block
-var detail_section: Node
+var current_section: BlockInfoSection
+var current_source_id := ""
 var pinned := false
 
+@onready var margin: MarginContainer = $Margin
+@onready var content: VBoxContainer = $Margin/VBox
+@onready var header: HBoxContainer = $Margin/VBox/Header
 @onready var title_label: Label = $Margin/VBox/Header/Title
 @onready var close_button: Button = $Margin/VBox/Header/CloseButton
-@onready var status_label: Label = $Margin/VBox/Status
-@onready var separator: HSeparator = $Margin/VBox/Separator
-@onready var detail_scroll: ScrollContainer = $Margin/VBox/DetailScroll
-@onready var detail_host: VBoxContainer = (
-	$Margin/VBox/DetailScroll/DetailHost
+@onready var section_scroll: ScrollContainer = (
+	$Margin/VBox/SectionScroll
+)
+@onready var section_host: VBoxContainer = (
+	$Margin/VBox/SectionScroll/SectionHost
 )
 
 
@@ -32,7 +31,10 @@ func _ready() -> void:
 
 func _physics_process(_delta: float) -> void:
 	if pinned:
-		if not is_instance_valid(target_block):
+		if (
+			not is_instance_valid(current_section)
+			or not is_instance_valid(target_block)
+		):
 			close_panel()
 		return
 	if get_viewport().gui_get_hovered_control() != null:
@@ -44,39 +46,35 @@ func _physics_process(_delta: float) -> void:
 func pin_hovered_block(
 	screen_position: Vector2 = Vector2.ZERO
 ) -> bool:
-	if pinned or not visible or not is_instance_valid(hover_block):
-		return false
-	var block := hover_block
-	var detail_scene := _get_detail_scene(block)
 	if (
-		not block.has_information_panel()
-		or detail_scene == null
+		pinned
+		or not visible
+		or not is_instance_valid(hover_block)
+		or not is_instance_valid(current_section)
+		or not current_section.has_configurable_content()
 	):
 		return false
-
-	_disconnect_target()
-	target_block = block
+	target_block = hover_block
 	hover_block = null
 	pinned = true
-	target_block.health_changed.connect(_refresh_general)
-	target_block.block_destroyed.connect(_on_target_destroyed)
-	_refresh_general()
-	_create_detail_section(detail_scene)
 	_set_expanded_mode()
 	show()
 	move_to_front()
 	var target_position := position
 	if screen_position != Vector2.ZERO:
 		target_position = screen_position + CURSOR_OFFSET
+	_resize_to_content()
 	_place_inside_viewport(target_position)
 	return true
 
 
 func close_panel() -> void:
 	pinned = false
+	target_block = null
 	hover_block = null
+	current_source_id = ""
 	hide()
-	_disconnect_target()
+	_clear_section()
 	_set_compact_mode()
 
 
@@ -147,10 +145,11 @@ func _show_live_block(block: Block) -> void:
 	if not is_instance_valid(block):
 		_hide_compact()
 		return
-	_show_compact(
-		BlockDB.get_block_name(block.block_id),
+	_show_info(
+		block.block_id,
 		"HP: %.1f / %.1f" % [maxf(block.hp, 0.0), block.max_hp],
-		block
+		block,
+		"block:%d" % block.get_instance_id()
 	)
 
 
@@ -172,11 +171,20 @@ func _show_world_block(
 		return
 	var block_id := int(state["block_id"])
 	var max_hp := _get_world_block_max_hp(block_id, state)
-	_show_compact(
-		BlockDB.get_block_name(block_id),
+	var anchor := layer.get_block_anchor(cell)
+	if anchor == WorldBlockLayer.INVALID_CELL:
+		anchor = cell
+	_show_info(
+		block_id,
 		"HP: %.1f / %.1f" % [
 			maxf(float(state["hp"]), 0.0),
 			max_hp,
+		],
+		null,
+		"world:%d:%d:%d" % [
+			layer.get_instance_id(),
+			anchor.x,
+			anchor.y,
 		]
 	)
 
@@ -198,50 +206,130 @@ func _show_liquid(
 		if total_mass < 1000.0
 		else "Total mass: %.1f T" % (total_mass / 1000.0)
 	)
-	_show_compact(
-		BlockDB.get_block_name(int(state["block_id"])),
-		mass_text
+	_show_info(
+		int(state["block_id"]),
+		mass_text,
+		null,
+		"liquid:%d:%d:%d" % [
+			layer.get_instance_id(),
+			cell.x,
+			cell.y,
+		]
 	)
 
 
-func _show_compact(
-	title: String,
-	status: String,
-	block: Block = null
+func _show_info(
+	block_id: int,
+	summary: String,
+	block: Block,
+	source_id: String
 ) -> void:
+	if not BlockDB.has_block(block_id):
+		_hide_compact()
+		return
+	if source_id != current_source_id:
+		if not _load_section(block_id, block, summary):
+			_hide_compact()
+			return
+		current_source_id = source_id
+	else:
+		current_section.update_summary(summary)
 	hover_block = block if is_instance_valid(block) else null
+	title_label.text = BlockDB.get_block_name(block_id)
 	_set_compact_mode()
-	title_label.text = title
-	status_label.text = status
 	show()
+	_resize_to_content()
 	_place_inside_viewport(
 		get_viewport().get_mouse_position() + CURSOR_OFFSET
 	)
 
 
+func _load_section(
+	block_id: int,
+	block: Block,
+	summary: String
+) -> bool:
+	_clear_section()
+	var section_scene := BlockDB.get_info_section_scene(block_id)
+	if section_scene == null:
+		return false
+	var instance := section_scene.instantiate()
+	var section := instance as BlockInfoSection
+	if section == null:
+		instance.queue_free()
+		return false
+	current_section = section
+	section_host.add_child(current_section)
+	current_section.target_invalidated.connect(_on_target_invalidated)
+	current_section.minimum_size_changed.connect(
+		_on_section_minimum_size_changed
+	)
+	if not current_section.bind_block(block, summary):
+		_clear_section()
+		return false
+	return true
+
+
+func _clear_section() -> void:
+	if not is_instance_valid(current_section):
+		current_section = null
+		return
+	current_section.unbind_block()
+	section_host.remove_child(current_section)
+	current_section.queue_free()
+	current_section = null
+
+
 func _hide_compact() -> void:
+	if pinned:
+		return
 	hover_block = null
+	current_source_id = ""
 	hide()
+	_clear_section()
 
 
 func _set_compact_mode() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	section_scroll.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	close_button.hide()
-	separator.hide()
-	detail_scroll.hide()
-	size = COMPACT_SIZE
+	if is_instance_valid(current_section):
+		current_section.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		current_section.set_extended(false)
 
 
 func _set_expanded_mode() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
+	section_scroll.mouse_filter = Control.MOUSE_FILTER_STOP
 	close_button.show()
-	separator.show()
-	detail_scroll.show()
+	if is_instance_valid(current_section):
+		current_section.mouse_filter = Control.MOUSE_FILTER_PASS
+		current_section.set_extended(true)
+
+
+func _resize_to_content() -> void:
+	if not is_instance_valid(current_section):
+		return
 	var viewport_size := get_viewport_rect().size
-	size = Vector2(
-		minf(EXPANDED_WIDTH, viewport_size.x),
-		minf(_get_detail_height(target_block), viewport_size.y)
+	var section_size := current_section.get_combined_minimum_size()
+	var header_height := header.get_combined_minimum_size().y
+	var separation := content.get_theme_constant("separation")
+	var vertical_margin := (
+		margin.get_theme_constant("margin_top")
+		+ margin.get_theme_constant("margin_bottom")
 	)
+	var desired_height := (
+		header_height
+		+ section_size.y
+		+ separation
+		+ vertical_margin
+	)
+	var desired_width := EXPANDED_WIDTH if pinned else COMPACT_WIDTH
+	size = Vector2(
+		minf(desired_width, viewport_size.x),
+		minf(desired_height, viewport_size.y)
+	)
+	_place_inside_viewport(position)
 
 
 func _place_inside_viewport(target_position: Vector2) -> void:
@@ -267,75 +355,13 @@ func _get_world_block_max_hp(
 	)
 
 
-func _disconnect_target() -> void:
-	_clear_detail_section()
-	if not is_instance_valid(target_block):
-		target_block = null
-		return
-	if target_block.health_changed.is_connected(_refresh_general):
-		target_block.health_changed.disconnect(_refresh_general)
-	if target_block.block_destroyed.is_connected(_on_target_destroyed):
-		target_block.block_destroyed.disconnect(_on_target_destroyed)
-	target_block = null
+func _on_section_minimum_size_changed() -> void:
+	if visible:
+		call_deferred("_resize_to_content")
 
 
-func _refresh_general() -> void:
-	if not is_instance_valid(target_block):
-		return
-	title_label.text = BlockDB.get_block_name(target_block.block_id)
-	status_label.text = "HP: %.1f / %.1f" % [
-		maxf(target_block.hp, 0.0),
-		target_block.max_hp,
-	]
-
-
-func _get_detail_scene(block: Block) -> PackedScene:
-	if not is_instance_valid(block):
-		return null
-	if block is ControlBlock:
-		return CONTROL_DETAIL
-	if block is Weapon:
-		return WEAPON_DETAIL
-	if block.get_information_panel_key() == &"drill":
-		return DRILL_DETAIL
-	if block.get_information_panel_key() == &"vehicle_bay":
-		return VEHICLEBAY_DETAIL
-	if block is ItemStorage or block is LiquidStorage:
-		return STORAGE_DETAIL
-	return null
-
-
-func _get_detail_height(block: Block) -> float:
-	if block is ControlBlock:
-		return 230.0
-	if block is Weapon:
-		return 330.0
-	if block.get_information_panel_key() == &"drill":
-		return 210.0
-	if block.get_information_panel_key() == &"vehicle_bay":
-		return 350.0
-	if block is ItemStorage or block is LiquidStorage:
-		return 520.0
-	return COMPACT_SIZE.y
-
-
-func _create_detail_section(detail_scene: PackedScene) -> void:
-	detail_section = detail_scene.instantiate()
-	detail_host.add_child(detail_section)
-	if detail_section.has_method("bind_block"):
-		detail_section.bind_block(target_block)
-
-
-func _clear_detail_section() -> void:
-	if not is_instance_valid(detail_section):
-		detail_section = null
-		return
-	if detail_section.has_method("unbind_block"):
-		detail_section.unbind_block()
-	detail_host.remove_child(detail_section)
-	detail_section.queue_free()
-	detail_section = null
-
-
-func _on_target_destroyed() -> void:
-	close_panel()
+func _on_target_invalidated() -> void:
+	if pinned:
+		close_panel()
+	else:
+		_hide_compact()

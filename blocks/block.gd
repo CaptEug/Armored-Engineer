@@ -80,14 +80,6 @@ func _ready():
 	refresh_shared_visual()
 
 
-func has_information_panel() -> bool:
-	return false
-
-
-func get_information_panel_key() -> StringName:
-	return &""
-
-
 func is_power_consumer() -> bool:
 	return false
 

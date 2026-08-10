@@ -2,30 +2,7 @@ class_name ConstructionSupport
 extends RefCounted
 
 
-static func get_candidate_storages(
-	target_vehicle: Vehicle,
-	build_world_position: Vector2,
-	range_pixels: float
-) -> Array[ItemStorage]:
-	var result: Array[ItemStorage] = []
-	if not is_instance_valid(target_vehicle):
-		return result
-
-	_append_vehicle_storages(target_vehicle, result)
-	var nearby := _get_nearby_construction_storages(
-		target_vehicle.get_tree(),
-		build_world_position,
-		range_pixels,
-		target_vehicle.owner_id,
-		target_vehicle
-	)
-	for storage: ItemStorage in nearby:
-		if not result.has(storage):
-			result.append(storage)
-	return result
-
-
-static func get_workshop_candidate_storages(
+static func get_vehicle_construction_storages(
 	target_vehicle: Vehicle,
 	workshop_building: Building
 ) -> Array[ItemStorage]:
@@ -40,22 +17,21 @@ static func get_workshop_candidate_storages(
 	return result
 
 
-static func get_world_candidate_storages(
+static func get_building_construction_storages(
 	tree: SceneTree,
 	build_world_position: Vector2,
 	range_pixels: float,
 	owner_id: StringName
 ) -> Array[ItemStorage]:
-	return _get_nearby_construction_storages(
+	return _get_ranged_construction_storages(
 		tree,
 		build_world_position,
 		range_pixels,
-		owner_id,
-		null
+		owner_id
 	)
 
 
-static func has_world_construction_support(
+static func has_building_construction_support(
 	tree: SceneTree,
 	build_world_position: Vector2,
 	range_pixels: float,
@@ -182,12 +158,11 @@ static func _append_vehicle_storages(
 			result.append(storage)
 
 
-static func _get_nearby_construction_storages(
+static func _get_ranged_construction_storages(
 	tree: SceneTree,
 	build_world_position: Vector2,
 	range_pixels: float,
-	owner_id: StringName,
-	excluded_vehicle: Vehicle
+	owner_id: StringName
 ) -> Array[ItemStorage]:
 	var ranked: Array[Dictionary] = []
 	var seen := {}
@@ -197,7 +172,6 @@ static func _get_nearby_construction_storages(
 		var candidate := node as Vehicle
 		if (
 			not is_instance_valid(candidate)
-			or candidate == excluded_vehicle
 			or candidate.owner_id != owner_id
 		):
 			continue

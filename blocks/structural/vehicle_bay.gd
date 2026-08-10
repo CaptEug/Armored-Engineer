@@ -53,14 +53,6 @@ func _physics_process(_delta: float) -> void:
 	_refresh_docked_vehicle()
 
 
-func has_information_panel() -> bool:
-	return true
-
-
-func get_information_panel_key() -> StringName:
-	return &"vehicle_bay"
-
-
 func get_save_state() -> Dictionary:
 	return {"vehicle_front": int(vehicle_front)}
 

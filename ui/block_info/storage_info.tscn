@@ -8,58 +8,75 @@ size_flags_vertical = 3
 theme_override_constants/separation = 6
 script = ExtResource("1_script")
 
-[node name="ContentsTitle" type="Label" parent="."]
+[node name="ReadOnly" type="VBoxContainer" parent="."]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 6
+
+[node name="Summary" type="Label" parent="ReadOnly"]
+layout_mode = 2
+text = "HP: 0 / 0"
+
+[node name="ContentsTitle" type="Label" parent="ReadOnly"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 14
 text = "Contents"
 
-[node name="ContentsScroll" type="ScrollContainer" parent="."]
+[node name="ContentsScroll" type="ScrollContainer" parent="ReadOnly"]
 custom_minimum_size = Vector2(0, 92)
 layout_mode = 2
 horizontal_scroll_mode = 0
 
-[node name="ContentsList" type="VBoxContainer" parent="ContentsScroll"]
+[node name="ContentsList" type="VBoxContainer" parent="ReadOnly/ContentsScroll"]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="CapacityBar" type="ProgressBar" parent="."]
+[node name="CapacityBar" type="ProgressBar" parent="ReadOnly"]
 custom_minimum_size = Vector2(0, 18)
 layout_mode = 2
 show_percentage = false
 
-[node name="CapacityLabel" type="Label" parent="."]
+[node name="CapacityLabel" type="Label" parent="ReadOnly"]
 layout_mode = 2
 text = "0 / 0 mass"
 
-[node name="AllowedTitle" type="Label" parent="."]
+[node name="ConfigSeparator" type="HSeparator" parent="."]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Configurable" type="VBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="AllowedTitle" type="Label" parent="Configurable"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 14
 text = "Allowed items"
 
-[node name="AllowedHint" type="Label" parent="."]
+[node name="AllowedHint" type="Label" parent="Configurable"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
 text = "Click an item name to remove it."
 
-[node name="AllowedScroll" type="ScrollContainer" parent="."]
+[node name="AllowedScroll" type="ScrollContainer" parent="Configurable"]
 custom_minimum_size = Vector2(0, 130)
 layout_mode = 2
 size_flags_vertical = 3
 horizontal_scroll_mode = 0
 
-[node name="AllowedList" type="VBoxContainer" parent="AllowedScroll"]
+[node name="AllowedList" type="VBoxContainer" parent="Configurable/AllowedScroll"]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="AddButton" type="Button" parent="."]
+[node name="AddButton" type="Button" parent="Configurable"]
 layout_mode = 2
 text = "+ Add item"
 
-[node name="AddPopup" type="PopupPanel" parent="."]
+[node name="AddPopup" type="PopupPanel" parent="Configurable"]
 size = Vector2i(360, 400)
 theme = ExtResource("2_theme")
 
-[node name="Margin" type="MarginContainer" parent="AddPopup"]
+[node name="Margin" type="MarginContainer" parent="Configurable/AddPopup"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -71,18 +88,18 @@ theme_override_constants/margin_top = 12
 theme_override_constants/margin_right = 12
 theme_override_constants/margin_bottom = 12
 
-[node name="VBox" type="VBoxContainer" parent="AddPopup/Margin"]
+[node name="VBox" type="VBoxContainer" parent="Configurable/AddPopup/Margin"]
 layout_mode = 2
 
-[node name="Title" type="Label" parent="AddPopup/Margin/VBox"]
+[node name="Title" type="Label" parent="Configurable/AddPopup/Margin/VBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
 text = "Add an allowed item"
 
-[node name="Tree" type="Tree" parent="AddPopup/Margin/VBox"]
+[node name="Tree" type="Tree" parent="Configurable/AddPopup/Margin/VBox"]
 layout_mode = 2
 size_flags_vertical = 3
 hide_root = true
 
-[connection signal="pressed" from="AddButton" to="." method="_on_add_button_pressed"]
-[connection signal="item_selected" from="AddPopup/Margin/VBox/Tree" to="." method="_on_add_tree_item_selected"]
+[connection signal="pressed" from="Configurable/AddButton" to="." method="_on_add_button_pressed"]
+[connection signal="item_selected" from="Configurable/AddPopup/Margin/VBox/Tree" to="." method="_on_add_tree_item_selected"]

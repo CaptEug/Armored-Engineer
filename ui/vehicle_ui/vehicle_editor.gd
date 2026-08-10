@@ -53,8 +53,6 @@ var removal_hover: RemovalOverlay
 
 var vehicle_scene: PackedScene = load("res://vehicle/Vehicle.tscn")
 
-@export_range(1.0, 64.0, 1.0) var construction_range_tiles := 8.0
-
 
 func _ready() -> void:
 	add_to_group("vehicle_editor")
@@ -567,8 +565,7 @@ func place_block() -> void:
 		_show_status("Cannot build: block is not registered in BlockDB")
 		return
 	var cost := BlockDB.get_construction_cost(block_id)
-	var build_position := vehicle.cell_to_world(preview_cell)
-	var storages := _get_construction_storages(build_position)
+	var storages := _get_construction_storages()
 	var payment := ConstructionSupport.consume(cost, storages)
 	if not payment["ok"]:
 		_show_status(
@@ -618,18 +615,10 @@ func _is_candidate_inside_workshop(candidate: Block) -> bool:
 	)
 
 
-func _get_construction_storages(
-	build_world_position: Vector2
-) -> Array[ItemStorage]:
-	if active_workshop_building != null:
-		return ConstructionSupport.get_workshop_candidate_storages(
-			vehicle,
-			active_workshop_building
-		)
-	return ConstructionSupport.get_candidate_storages(
+func _get_construction_storages() -> Array[ItemStorage]:
+	return ConstructionSupport.get_vehicle_construction_storages(
 		vehicle,
-		build_world_position,
-		construction_range_tiles * Globals.TILE_SIZE
+		active_workshop_building
 	)
 
 
@@ -812,9 +801,7 @@ func _construct_blueprint_record(record: Array) -> Dictionary:
 		return {"ok": false, "reason": "blocked"}
 
 	var cost := _get_record_construction_cost(record)
-	var storages := _get_construction_storages(
-		vehicle.cell_to_world(cell)
-	)
+	var storages := _get_construction_storages()
 	var payment := ConstructionSupport.consume(cost, storages)
 	if not payment["ok"]:
 		return {

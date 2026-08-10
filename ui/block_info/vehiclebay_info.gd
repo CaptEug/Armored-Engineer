@@ -1,5 +1,5 @@
 class_name VehicleBayBlockInfo
-extends VBoxContainer
+extends BlockInfoSection
 
 const ACTION_ICON_ATLAS := preload("res://assets/icons/icons.png")
 const ACTION_EDIT_REGION := Rect2(0, 160, 32, 32)
@@ -11,20 +11,27 @@ var _updating_direction := false
 var _editor_status := ""
 var _action_region := Rect2()
 
-@onready var docking_label: Label = $Docking
-@onready var direction_select: OptionButton = $DirectionRow/Direction
-@onready var vehicle_action_button: TextureButton = $VehicleActionButton
-@onready var status_label: Label = $Status
+@onready var docking_label: Label = $ReadOnly/Docking
+@onready var direction_select: OptionButton = (
+	$Configurable/DirectionRow/Direction
+)
+@onready var vehicle_action_button: TextureButton = (
+	$Configurable/VehicleActionButton
+)
+@onready var status_label: Label = $Configurable/Status
 
 
 func _ready() -> void:
+	super()
 	set_process(false)
 
 
-func bind_block(block: Block) -> void:
-	workshop = block as VehicleBayBlock
-	if not is_instance_valid(workshop):
-		return
+func _accepts_block(block: Block) -> bool:
+	return block is VehicleBayBlock
+
+
+func _bind_target() -> void:
+	workshop = target_block as VehicleBayBlock
 	if not workshop.docked_vehicle_changed.is_connected(
 		_on_docked_vehicle_changed
 	):
@@ -56,11 +63,10 @@ func bind_block(block: Block) -> void:
 		editor.status_changed.connect(_on_editor_status_changed)
 	if editor != null:
 		editor.set_workshop_context(workshop, docked_vehicle)
-	_refresh_all()
 	set_process(true)
 
 
-func unbind_block() -> void:
+func _unbind_target() -> void:
 	set_process(false)
 	if is_instance_valid(workshop):
 		if workshop.docked_vehicle_changed.is_connected(
@@ -96,6 +102,11 @@ func unbind_block() -> void:
 		editor.clear_workshop_context(workshop)
 	workshop = null
 	docked_vehicle = null
+	_editor_status = ""
+
+
+func _refresh_details() -> void:
+	_refresh_all()
 
 
 func _process(_delta: float) -> void:

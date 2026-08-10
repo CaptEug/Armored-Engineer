@@ -1,37 +1,45 @@
 class_name WeaponBlockInfoSection
-extends VBoxContainer
+extends BlockInfoSection
 
 var weapon: Weapon
 
-@onready var state_label: Label = $StateRow/State
-@onready var chambered_icon: TextureRect = $StateRow/Icon
-@onready var ammo_label: Label = $StateRow/Ammo
-@onready var selection_icon: TextureRect = $SelectionRow/Icon
-@onready var selection_label: Label = $SelectionRow/Label
-@onready var reload_bar: ProgressBar = $ReloadBar
-@onready var ammo_button: Button = $AmmoButton
-@onready var ammo_popup: PopupPanel = $AmmoPopup
-@onready var ammo_tree: Tree = $AmmoPopup/Margin/VBox/Tree
+@onready var state_label: Label = $ReadOnly/StateRow/State
+@onready var chambered_icon: TextureRect = $ReadOnly/StateRow/Icon
+@onready var ammo_label: Label = $ReadOnly/StateRow/Ammo
+@onready var selection_icon: TextureRect = $ReadOnly/SelectionRow/Icon
+@onready var selection_label: Label = $ReadOnly/SelectionRow/Label
+@onready var reload_bar: ProgressBar = $ReadOnly/ReloadBar
+@onready var ammo_button: Button = $Configurable/AmmoButton
+@onready var ammo_popup: PopupPanel = $Configurable/AmmoPopup
+@onready var ammo_tree: Tree = (
+	$Configurable/AmmoPopup/Margin/VBox/Tree
+)
 
 func _process(_delta: float) -> void:
 	if is_instance_valid(weapon):
-		_refresh()
+		refresh()
 
-func bind_block(block: Block) -> void:
-	unbind_block()
-	if not block is Weapon:
-		return
-	weapon = block as Weapon
-	weapon.weapon_status_changed.connect(_refresh)
-	_refresh()
 
-func unbind_block() -> void:
+func _accepts_block(block: Block) -> bool:
+	return block is Weapon
+
+
+func _bind_target() -> void:
+	weapon = target_block as Weapon
+	weapon.weapon_status_changed.connect(refresh)
+
+
+func _unbind_target() -> void:
 	ammo_popup.hide()
-	if is_instance_valid(weapon) and weapon.weapon_status_changed.is_connected(_refresh):
-		weapon.weapon_status_changed.disconnect(_refresh)
+	if (
+		is_instance_valid(weapon)
+		and weapon.weapon_status_changed.is_connected(refresh)
+	):
+		weapon.weapon_status_changed.disconnect(refresh)
 	weapon = null
 
-func _refresh() -> void:
+
+func _refresh_details() -> void:
 	if not is_instance_valid(weapon):
 		return
 	chambered_icon.texture = null
