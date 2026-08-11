@@ -1,35 +1,37 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://ccvmtmd6hgpip"]
 
+[ext_resource type="Theme" uid="uid://dhnsjii6e8fe4" path="res://assets/resources/tooltip_theme.tres" id="1_i0fb7"]
 [ext_resource type="Script" uid="uid://o06m3jd63e3a" path="res://ui/block_info/control_info.gd" id="1_script"]
 
-[node name="ControlBlockInfo" type="VBoxContainer"]
+[node name="ControlBlockInfo" type="VBoxContainer" unique_id=348242749]
+theme = ExtResource("1_i0fb7")
 theme_override_constants/separation = 8
 script = ExtResource("1_script")
 
-[node name="ReadOnly" type="VBoxContainer" parent="."]
+[node name="ReadOnly" type="VBoxContainer" parent="." unique_id=1484560015]
 layout_mode = 2
 mouse_filter = 2
 theme_override_constants/separation = 6
 
-[node name="Summary" type="Label" parent="ReadOnly"]
+[node name="Summary" type="Label" parent="ReadOnly" unique_id=1296166418]
 layout_mode = 2
 text = "HP: 0 / 0"
 
-[node name="ControlStatus" type="Label" parent="ReadOnly"]
+[node name="ControlStatus" type="Label" parent="ReadOnly" unique_id=1792866553]
 layout_mode = 2
 text = "Inactive control"
 
-[node name="ConfigSeparator" type="HSeparator" parent="."]
+[node name="ConfigSeparator" type="HSeparator" parent="." unique_id=233259585]
 layout_mode = 2
 mouse_filter = 2
 
-[node name="Configurable" type="VBoxContainer" parent="."]
+[node name="Configurable" type="VBoxContainer" parent="." unique_id=2145092985]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="ActiveToggle" type="CheckButton" parent="Configurable"]
+[node name="ActiveToggle" type="CheckButton" parent="Configurable" unique_id=800517999]
 layout_mode = 2
 tooltip_text = "Use this block to control the vehicle"
-text = "Functioning control block"
+text = "Control vehicle"
 
 [connection signal="toggled" from="Configurable/ActiveToggle" to="." method="_on_active_toggle_toggled"]

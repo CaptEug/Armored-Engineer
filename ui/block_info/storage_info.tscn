@@ -1,86 +1,91 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://dklkmmry8iy5o"]
 
+[ext_resource type="Theme" uid="uid://dhnsjii6e8fe4" path="res://assets/resources/tooltip_theme.tres" id="1_aebdu"]
 [ext_resource type="Script" uid="uid://dcn10m6he3r3e" path="res://ui/block_info/storage_info.gd" id="1_script"]
 [ext_resource type="Theme" uid="uid://djb1bkq82a1wy" path="res://assets/resources/UI_theme.tres" id="2_theme"]
 
-[node name="StorageBlockInfo" type="VBoxContainer"]
+[node name="StorageBlockInfo" type="VBoxContainer" unique_id=1696067410]
 size_flags_vertical = 3
+theme = ExtResource("1_aebdu")
 theme_override_constants/separation = 6
 script = ExtResource("1_script")
 
-[node name="ReadOnly" type="VBoxContainer" parent="."]
+[node name="ReadOnly" type="VBoxContainer" parent="." unique_id=1827345493]
 layout_mode = 2
 mouse_filter = 2
 theme_override_constants/separation = 6
 
-[node name="Summary" type="Label" parent="ReadOnly"]
+[node name="Summary" type="Label" parent="ReadOnly" unique_id=1329111662]
 layout_mode = 2
 text = "HP: 0 / 0"
 
-[node name="ContentsTitle" type="Label" parent="ReadOnly"]
+[node name="ContentsTitle" type="Label" parent="ReadOnly" unique_id=143179195]
 layout_mode = 2
 theme_override_font_sizes/font_size = 14
 text = "Contents"
 
-[node name="ContentsScroll" type="ScrollContainer" parent="ReadOnly"]
+[node name="ContentsScroll" type="ScrollContainer" parent="ReadOnly" unique_id=1376783525]
 custom_minimum_size = Vector2(0, 92)
 layout_mode = 2
 horizontal_scroll_mode = 0
 
-[node name="ContentsList" type="VBoxContainer" parent="ReadOnly/ContentsScroll"]
+[node name="ContentsList" type="VBoxContainer" parent="ReadOnly/ContentsScroll" unique_id=4899685]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="CapacityBar" type="ProgressBar" parent="ReadOnly"]
+[node name="CapacityBar" type="ProgressBar" parent="ReadOnly" unique_id=837860896]
 custom_minimum_size = Vector2(0, 18)
 layout_mode = 2
 show_percentage = false
 
-[node name="CapacityLabel" type="Label" parent="ReadOnly"]
+[node name="CapacityLabel" type="Label" parent="ReadOnly" unique_id=1808735801]
 layout_mode = 2
 text = "0 / 0 mass"
 
-[node name="ConfigSeparator" type="HSeparator" parent="."]
+[node name="ConfigSeparator" type="HSeparator" parent="." unique_id=932963322]
 layout_mode = 2
 mouse_filter = 2
 
-[node name="Configurable" type="VBoxContainer" parent="."]
+[node name="Configurable" type="VBoxContainer" parent="." unique_id=1942568248]
 layout_mode = 2
 theme_override_constants/separation = 6
 
-[node name="AllowedTitle" type="Label" parent="Configurable"]
+[node name="AllowedTitle" type="Label" parent="Configurable" unique_id=2135733025]
 layout_mode = 2
 theme_override_font_sizes/font_size = 14
 text = "Allowed items"
 
-[node name="AllowedHint" type="Label" parent="Configurable"]
+[node name="AllowedHint" type="Label" parent="Configurable" unique_id=241584263]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
-text = "Click an item name to remove it."
+text = "Click an item to remove it."
 
-[node name="AllowedScroll" type="ScrollContainer" parent="Configurable"]
+[node name="AllowedScroll" type="ScrollContainer" parent="Configurable" unique_id=518440673]
 custom_minimum_size = Vector2(0, 130)
 layout_mode = 2
 size_flags_vertical = 3
 horizontal_scroll_mode = 0
 
-[node name="AllowedList" type="VBoxContainer" parent="Configurable/AllowedScroll"]
+[node name="AllowedList" type="VBoxContainer" parent="Configurable/AllowedScroll" unique_id=561018545]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="AddButton" type="Button" parent="Configurable"]
+[node name="AddButton" type="Button" parent="Configurable" unique_id=189365145]
 layout_mode = 2
 text = "+ Add item"
 
-[node name="AddPopup" type="PopupPanel" parent="Configurable"]
+[node name="AddPopup" type="PopupPanel" parent="Configurable" unique_id=54716669]
 size = Vector2i(360, 400)
 theme = ExtResource("2_theme")
 
-[node name="Margin" type="MarginContainer" parent="Configurable/AddPopup"]
-layout_mode = 1
+[node name="Margin" type="MarginContainer" parent="Configurable/AddPopup" unique_id=1512571088]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = 4.0
+offset_top = 4.0
+offset_right = -4.0
+offset_bottom = -4.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/margin_left = 12
@@ -88,15 +93,15 @@ theme_override_constants/margin_top = 12
 theme_override_constants/margin_right = 12
 theme_override_constants/margin_bottom = 12
 
-[node name="VBox" type="VBoxContainer" parent="Configurable/AddPopup/Margin"]
+[node name="VBox" type="VBoxContainer" parent="Configurable/AddPopup/Margin" unique_id=1177729094]
 layout_mode = 2
 
-[node name="Title" type="Label" parent="Configurable/AddPopup/Margin/VBox"]
+[node name="Title" type="Label" parent="Configurable/AddPopup/Margin/VBox" unique_id=1642342783]
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
 text = "Add an allowed item"
 
-[node name="Tree" type="Tree" parent="Configurable/AddPopup/Margin/VBox"]
+[node name="Tree" type="Tree" parent="Configurable/AddPopup/Margin/VBox" unique_id=442441867]
 layout_mode = 2
 size_flags_vertical = 3
 hide_root = true

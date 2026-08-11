@@ -59,6 +59,7 @@ popup/item_3/id = 3
 custom_minimum_size = Vector2(32, 32)
 layout_mode = 2
 size_flags_horizontal = 8
+mouse_default_cursor_shape = 2
 texture_normal = SubResource("AtlasTexture_jsdmi")
 
 [node name="Status" type="Label" parent="Configurable" unique_id=775316598]

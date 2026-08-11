@@ -69,4 +69,4 @@ func _on_settings_button_pressed() -> void:
 
 
 func _on_map_button_pressed():
-	minimap.show()
+	minimap.visible = !minimap.visible

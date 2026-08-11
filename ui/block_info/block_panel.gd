@@ -1,8 +1,6 @@
 class_name BlockPanel
 extends FloatingPanel
 
-const COMPACT_WIDTH := 260.0
-const EXPANDED_WIDTH := 360.0
 const CURSOR_OFFSET := Vector2(16.0, 16.0)
 
 var target_block: Block
@@ -312,19 +310,26 @@ func _resize_to_content() -> void:
 		return
 	var viewport_size := get_viewport_rect().size
 	var section_size := current_section.get_combined_minimum_size()
-	var header_height := header.get_combined_minimum_size().y
+	var header_size := header.get_combined_minimum_size()
 	var separation := content.get_theme_constant("separation")
+	var horizontal_margin := (
+		margin.get_theme_constant("margin_left")
+		+ margin.get_theme_constant("margin_right")
+	)
 	var vertical_margin := (
 		margin.get_theme_constant("margin_top")
 		+ margin.get_theme_constant("margin_bottom")
 	)
+	var desired_width := (
+		maxf(header_size.x, section_size.x)
+		+ horizontal_margin
+	)
 	var desired_height := (
-		header_height
+		header_size.y
 		+ section_size.y
 		+ separation
 		+ vertical_margin
 	)
-	var desired_width := EXPANDED_WIDTH if pinned else COMPACT_WIDTH
 	size = Vector2(
 		minf(desired_width, viewport_size.x),
 		minf(desired_height, viewport_size.y)

@@ -7,7 +7,7 @@ var max_zoom:int = 4
 var min_zoom:int = 1
 @export var map:GameMap
 @export var camera:Camera2D
-@onready var map_renderer = $MarginContainer/Screen/Clipper/MapRenderer
+@onready var map_renderer = $MarginContainer/Screen/MapRenderer
 @onready var view_screen = $MarginContainer/Screen
 
 
@@ -37,7 +37,3 @@ func _on_zoom_in_button_pressed() -> void:
 
 func _on_zoom_out_button_pressed() -> void:
 	zoom = clampi(zoom - 1, min_zoom, max_zoom)
-
-
-func _on_close_button_pressed():
-	hide()

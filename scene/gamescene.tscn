@@ -27,7 +27,7 @@ vehicle_editor = NodePath("../VehicleEditor")
 vehicle_panel = NodePath("../VehiclePanel")
 building_constructor = NodePath("../BuildingConstructor")
 settings_panel = NodePath("../Settingspanel")
-minimap = NodePath("../Minimap")
+minimap = NodePath("")
 
 [node name="BuildingConstructor" parent="UI" unique_id=1705208497 node_paths=PackedStringArray("gamemap") instance=ExtResource("10_building_constructor")]
 gamemap = NodePath("../../Gamemap")
@@ -35,18 +35,13 @@ gamemap = NodePath("../../Gamemap")
 [node name="VehicleEditor" parent="UI" unique_id=554690041 node_paths=PackedStringArray("gamemap") instance=ExtResource("8_5ntrk")]
 gamemap = NodePath("../../Gamemap")
 
-[node name="Minimap" parent="UI" unique_id=2006042141 node_paths=PackedStringArray("map", "camera") instance=ExtResource("4_mulil")]
-anchors_preset = 3
+[node name="Minimap" parent="UI" unique_id=413400483 node_paths=PackedStringArray("map", "camera") instance=ExtResource("4_mulil")]
+anchors_preset = 1
 anchor_left = 1.0
-anchor_top = 1.0
 anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -260.0
-offset_top = -276.0
+offset_left = -256.0
 offset_right = 0.0
-offset_bottom = 0.0
 grow_horizontal = 0
-grow_vertical = 0
 map = NodePath("../../Gamemap")
 camera = NodePath("../../Camera2D")
 

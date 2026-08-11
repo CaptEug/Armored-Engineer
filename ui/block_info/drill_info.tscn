@@ -1,43 +1,44 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://jhmwvgwtvskv"]
 
+[ext_resource type="Theme" uid="uid://dhnsjii6e8fe4" path="res://assets/resources/tooltip_theme.tres" id="1_g2ap8"]
 [ext_resource type="Script" uid="uid://udosbisirh4k" path="res://ui/block_info/drill_info.gd" id="1_script"]
 
-[node name="DrillBlockInfo" type="VBoxContainer"]
+[node name="DrillBlockInfo" type="VBoxContainer" unique_id=450643774]
+theme = ExtResource("1_g2ap8")
 theme_override_constants/separation = 10
 script = ExtResource("1_script")
 
-[node name="ReadOnly" type="VBoxContainer" parent="."]
+[node name="ReadOnly" type="VBoxContainer" parent="." unique_id=689093915]
 layout_mode = 2
 mouse_filter = 2
 theme_override_constants/separation = 6
 
-[node name="Summary" type="Label" parent="ReadOnly"]
+[node name="Summary" type="Label" parent="ReadOnly" unique_id=1892408441]
 layout_mode = 2
 text = "HP: 0 / 0"
 
-[node name="PowerRow" type="HBoxContainer" parent="ReadOnly"]
+[node name="PowerRow" type="HBoxContainer" parent="ReadOnly" unique_id=1947417736]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="Title" type="Label" parent="ReadOnly/PowerRow"]
+[node name="Title" type="Label" parent="ReadOnly/PowerRow" unique_id=2045971877]
 layout_mode = 2
 text = "Power supply"
 
-[node name="Percentage" type="Label" parent="ReadOnly/PowerRow"]
+[node name="Percentage" type="Label" parent="ReadOnly/PowerRow" unique_id=1065853744]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.85, 0.12, 0.12, 1)
 text = "0%"
-mouse_filter = 2
 
-[node name="StorageFull" type="Label" parent="ReadOnly"]
+[node name="StorageFull" type="Label" parent="ReadOnly" unique_id=1642817110]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.62, 0.08, 1)
 text = "Storage full"
 
-[node name="ConfigSeparator" type="HSeparator" parent="."]
+[node name="ConfigSeparator" type="HSeparator" parent="." unique_id=1083441786]
 layout_mode = 2
 mouse_filter = 2
 
-[node name="Configurable" type="VBoxContainer" parent="."]
+[node name="Configurable" type="VBoxContainer" parent="." unique_id=618060629]
 layout_mode = 2
 theme_override_constants/separation = 8

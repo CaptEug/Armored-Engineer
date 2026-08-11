@@ -95,7 +95,7 @@ func _refresh_allowed_items() -> void:
 		allowed_list.add_child(_make_empty_label("No items allowed"))
 	for item_name: String in item_names:
 		var button := Button.new()
-		button.text = ItemDB.get_display_name(item_name)
+		button.text = "- "+ItemDB.get_display_name(item_name)
 		button.icon = ItemDB.get_item_by_name(item_name).get("icon")
 		button.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		button.tooltip_text = "Click to remove this allowed item"

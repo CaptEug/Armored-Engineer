@@ -191,66 +191,6 @@ texture_margin_bottom = 14.0
 axis_stretch_horizontal = 1
 axis_stretch_vertical = 1
 
-[sub_resource type="AtlasTexture" id="AtlasTexture_d55uv"]
-atlas = ExtResource("1_4w2ry")
-region = Rect2(0, 48, 48, 48)
-
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_d55uv"]
-texture = SubResource("AtlasTexture_d55uv")
-texture_margin_left = 16.0
-texture_margin_top = 16.0
-texture_margin_right = 16.0
-texture_margin_bottom = 16.0
-axis_stretch_horizontal = 1
-axis_stretch_vertical = 1
-
-[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_d55uv"]
-content_margin_left = 16.0
-content_margin_top = 8.0
-content_margin_right = 16.0
-content_margin_bottom = 8.0
-
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_edc7y"]
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_o6fga"]
-atlas = ExtResource("1_4w2ry")
-region = Rect2(144, 48, 48, 48)
-
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_we4p1"]
-texture = SubResource("AtlasTexture_o6fga")
-texture_margin_left = 16.0
-texture_margin_top = 8.0
-texture_margin_right = 16.0
-texture_margin_bottom = 8.0
-axis_stretch_horizontal = 1
-axis_stretch_vertical = 1
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_kwu70"]
-atlas = ExtResource("1_4w2ry")
-region = Rect2(96, 48, 48, 48)
-
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_qdf78"]
-texture = SubResource("AtlasTexture_kwu70")
-texture_margin_left = 16.0
-texture_margin_top = 8.0
-texture_margin_right = 16.0
-texture_margin_bottom = 8.0
-axis_stretch_horizontal = 1
-axis_stretch_vertical = 1
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_qdf78"]
-atlas = ExtResource("1_4w2ry")
-region = Rect2(48, 48, 48, 48)
-
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_kwu70"]
-texture = SubResource("AtlasTexture_qdf78")
-texture_margin_left = 16.0
-texture_margin_top = 8.0
-texture_margin_right = 16.0
-texture_margin_bottom = 8.0
-
-[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_kwu70"]
-
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_0on1k"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_jxqpn"]
@@ -391,18 +331,6 @@ RichTextLabel/colors/default_color = Color(0, 1, 0, 1)
 RichTextLabel/fonts/bold_font = ExtResource("3_4w2ry")
 RichTextLabel/fonts/normal_font = ExtResource("3_4w2ry")
 RichTextLabel/styles/normal = SubResource("StyleBoxTexture_vyrlb")
-TabContainer/colors/font_hovered_color = Color(0.169244, 0.169246, 0.169246, 1)
-TabContainer/colors/font_selected_color = Color(0.262933, 0.262932, 0.262932, 1)
-TabContainer/colors/font_unselected_color = Color(0.125911, 0.125911, 0.125911, 1)
-TabContainer/constants/side_margin = 0
-TabContainer/fonts/font = ExtResource("3_4w2ry")
-TabContainer/styles/panel = SubResource("StyleBoxTexture_d55uv")
-TabContainer/styles/tab_disabled = SubResource("StyleBoxEmpty_d55uv")
-TabContainer/styles/tab_focus = SubResource("StyleBoxTexture_edc7y")
-TabContainer/styles/tab_hovered = SubResource("StyleBoxTexture_we4p1")
-TabContainer/styles/tab_selected = SubResource("StyleBoxTexture_qdf78")
-TabContainer/styles/tab_unselected = SubResource("StyleBoxTexture_kwu70")
-TabContainer/styles/tabbar_background = SubResource("StyleBoxEmpty_kwu70")
 TextEdit/colors/font_color = Color(0, 1, 0, 1)
 TextEdit/fonts/font = ExtResource("3_4w2ry")
 TextEdit/styles/focus = SubResource("StyleBoxEmpty_0on1k")
