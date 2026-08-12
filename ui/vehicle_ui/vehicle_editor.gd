@@ -22,6 +22,7 @@ enum BlueprintDialogMode {
 
 const DOCKING_LINEAR_SPEED_LIMIT := 2.0
 const DOCKING_ANGULAR_SPEED_LIMIT := 0.05
+const TURRET_EDIT_DIM := Color(0.35, 0.35, 0.35, 1.0)
 
 var vehicle: Vehicle
 var selected_block: Block
@@ -34,11 +35,17 @@ var blueprint_dialog_mode := BlueprintDialogMode.NONE
 var new_vehicle_index := 1
 var active_workshop: VehicleBayBlock
 var active_workshop_building: Building
+var active_turret: Turret
+var active_turret_mount: TurretMount
 var workshop_context: VehicleBayBlock
 var workshop_context_vehicle: Vehicle
 var workshop_new_vehicle := false
 var _session_previous_freeze := false
 var _session_previous_camera_rotation := 0.0
+var _turret_base_vehicle: Vehicle
+var _turret_vehicle_bay: VehicleBayBlock
+var _turret_previous_freeze := false
+var _turret_dimmed_items: Array[Dictionary] = []
 var removal_hover: RemovalOverlay
 
 @onready var editor_dock: Panel = $EditorDock
@@ -62,11 +69,25 @@ func _ready() -> void:
 
 
 func _exit_tree() -> void:
+	_restore_turret_edit_visuals()
 	if is_instance_valid(removal_hover):
 		removal_hover.queue_free()
 
 
 func _process(_delta: float) -> void:
+	if active_turret != null and not is_instance_valid(active_turret):
+		finish_turret_edit(false)
+	elif (
+		is_instance_valid(active_turret)
+		and is_instance_valid(_turret_base_vehicle)
+		and (
+			not is_instance_valid(_turret_vehicle_bay)
+			or _turret_vehicle_bay.get_docked_vehicle()
+			!= _turret_base_vehicle
+		)
+	):
+		finish_turret_edit(false)
+		_show_status("Turret editing stopped because the vehicle is no longer docked")
 	if vehicle != null and not is_instance_valid(vehicle):
 		if active_workshop != null:
 			cancel_workshop_edit("Edited vehicle is no longer available")
@@ -89,6 +110,7 @@ func _process(_delta: float) -> void:
 	if (
 		is_editing_vehicle()
 		and is_instance_valid(vehicle)
+		and not is_instance_valid(active_turret)
 		and com_button.button_pressed
 	):
 		com_icon.position = world_to_screen(
@@ -107,6 +129,10 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _handle_editor_input(event: InputEvent) -> void:
+	if event.is_action_pressed("ui_cancel") and is_instance_valid(active_turret):
+		finish_turret_edit()
+		get_viewport().set_input_as_handled()
+		return
 	if event.is_action_pressed("ROTATE"):
 		if (
 			selected_block != null
@@ -133,10 +159,14 @@ func _handle_editor_input(event: InputEvent) -> void:
 		return
 
 	var clicked_vehicle := _get_vehicle_under_mouse()
-	if clicked_vehicle != null and clicked_vehicle != vehicle:
+	if (
+		not is_instance_valid(active_turret)
+		and clicked_vehicle != null
+		and clicked_vehicle != vehicle
+	):
 		get_viewport().set_input_as_handled()
 		return
-	if not is_instance_valid(vehicle):
+	if not is_instance_valid(vehicle) and not is_instance_valid(active_turret):
 		return
 	if edit_mode == EditMode.BUILD:
 		place_block()
@@ -146,6 +176,10 @@ func _handle_editor_input(event: InputEvent) -> void:
 
 
 func enter_edit_mode() -> void:
+	if is_instance_valid(active_turret):
+		interface_state = InterfaceState.EDIT
+		_apply_interface_state()
+		return
 	if not is_instance_valid(vehicle) or not is_instance_valid(active_workshop):
 		return
 	vehicle.ensure_blueprint_from_blocks()
@@ -164,6 +198,9 @@ func exit_edit_mode() -> void:
 
 
 func close_editor() -> void:
+	if active_turret != null:
+		finish_turret_edit()
+		return
 	if active_workshop != null:
 		cancel_workshop_edit("Vehicle Bay editing cancelled")
 	clear_preview_block()
@@ -180,6 +217,120 @@ func is_editing_vehicle() -> bool:
 	return interface_state == InterfaceState.EDIT
 
 
+func is_editing_turret(target: Turret = null) -> bool:
+	return (
+		interface_state == InterfaceState.EDIT
+		and is_instance_valid(active_turret)
+		and (target == null or active_turret == target)
+	)
+
+
+func begin_turret_edit(mount: TurretMount) -> Dictionary:
+	if not is_instance_valid(mount) or not is_instance_valid(mount.turret):
+		return _session_error("Turret mount is unavailable")
+	if is_editing_vehicle():
+		return _session_error("Finish the current editing session first")
+	var assembly := mount.get_assembly()
+	var base_vehicle: Vehicle
+	var vehicle_bay: VehicleBayBlock
+	if assembly != null and assembly.host is Vehicle:
+		base_vehicle = assembly.host as Vehicle
+		vehicle_bay = _find_workshop_for_vehicle(base_vehicle)
+		if not is_instance_valid(vehicle_bay):
+			return _session_error(
+				"Vehicle must be docked in a maintenance bay before editing its turret"
+			)
+	var constructor := get_tree().get_first_node_in_group(
+		"building_constructor"
+	) as BuildingConstructor
+	if constructor != null:
+		constructor.set_active(false)
+	active_turret_mount = mount
+	active_turret = mount.turret
+	_turret_base_vehicle = base_vehicle
+	_turret_vehicle_bay = vehicle_bay
+	if is_instance_valid(_turret_base_vehicle):
+		_turret_previous_freeze = _turret_base_vehicle.freeze
+		_turret_base_vehicle.linear_velocity = Vector2.ZERO
+		_turret_base_vehicle.angular_velocity = 0.0
+		_turret_base_vehicle.freeze = true
+	_apply_turret_edit_visuals(assembly)
+	_session_previous_camera_rotation = 0.0
+	var camera := get_viewport().get_camera_2d()
+	if camera != null:
+		_session_previous_camera_rotation = camera.global_rotation
+		camera.set("target_pos", active_turret.global_position)
+		camera.set("target_rot", active_turret.global_rotation)
+	palette.set_turret_mode(true)
+	enter_edit_mode()
+	_show_status("Editing 3x3 turret")
+	return {"ok": true, "message": "Turret editor opened"}
+
+
+func finish_turret_edit(require_valid: bool = true) -> Dictionary:
+	if active_turret == null:
+		return _session_error("No turret editing session is active")
+	if require_valid and is_instance_valid(active_turret):
+		var validation := active_turret.validate_layout()
+		if not bool(validation["ok"]):
+			return _session_error(str(validation["message"]))
+	clear_preview_block()
+	clear_removal_hover()
+	palette.set_turret_mode(false)
+	_restore_turret_edit_visuals()
+	if is_instance_valid(_turret_base_vehicle):
+		_turret_base_vehicle.freeze = _turret_previous_freeze
+		_turret_base_vehicle.sleeping = true
+	var camera := get_viewport().get_camera_2d()
+	if camera != null:
+		camera.set("target_rot", _session_previous_camera_rotation)
+	active_turret = null
+	active_turret_mount = null
+	_turret_base_vehicle = null
+	_turret_vehicle_bay = null
+	interface_state = InterfaceState.CLOSED
+	_apply_interface_state()
+	return {"ok": true, "message": "Turret editing finished"}
+
+
+func _apply_turret_edit_visuals(assembly: BlockAssembly) -> void:
+	_restore_turret_edit_visuals()
+	if assembly == null:
+		return
+	for block: Block in assembly.blocks:
+		if not is_instance_valid(block) or block.block_host == active_turret:
+			continue
+		if block == active_turret_mount:
+			for child: Node in block.get_children():
+				if child != active_turret and child is CanvasItem:
+					_dim_turret_edit_item(child as CanvasItem)
+		else:
+			_dim_turret_edit_item(block)
+	if assembly.host is Vehicle:
+		var host_vehicle := assembly.host as Vehicle
+		if is_instance_valid(host_vehicle.passive_visuals):
+			_dim_turret_edit_item(host_vehicle.passive_visuals)
+
+
+func _dim_turret_edit_item(item: CanvasItem) -> void:
+	if not is_instance_valid(item):
+		return
+	_turret_dimmed_items.append({
+		"item": item,
+		"modulate": item.modulate,
+	})
+	item.modulate *= TURRET_EDIT_DIM
+
+
+func _restore_turret_edit_visuals() -> void:
+	for entry: Dictionary in _turret_dimmed_items:
+		var item_value: Variant = entry.get("item")
+		if is_instance_valid(item_value) and item_value is CanvasItem:
+			var item := item_value as CanvasItem
+			item.modulate = entry.get("modulate", Color.WHITE)
+	_turret_dimmed_items.clear()
+
+
 func is_fire_suppressed() -> bool:
 	return is_editing_vehicle()
 
@@ -194,8 +345,12 @@ func set_workshop_context(
 	)
 
 
-func clear_workshop_context(workshop: VehicleBayBlock) -> void:
-	if workshop_context != workshop or active_workshop == workshop:
+func clear_workshop_context(workshop: Variant) -> void:
+	if is_instance_valid(workshop_context) and workshop_context != workshop:
+		return
+	if is_instance_valid(workshop) and workshop_context != workshop:
+		return
+	if active_workshop == workshop:
 		return
 	workshop_context = null
 	workshop_context_vehicle = null
@@ -410,6 +565,14 @@ func _apply_interface_state() -> void:
 		and is_instance_valid(vehicle)
 		and com_button.button_pressed
 	)
+	var turret_edit := is_editing_turret()
+	$EditorDock/EditorTools/SaveButton.visible = not turret_edit
+	$EditorDock/EditorTools/LoadButton.visible = not turret_edit
+	$EditorDock/EditorTools/AutoConstructButton.visible = not turret_edit
+	com_button.visible = not turret_edit
+	$EditorDock/FinishButton.tooltip_text = (
+		"Finish turret editing" if turret_edit else "Finish vehicle editing"
+	)
 
 
 func toggle_mode() -> void:
@@ -428,7 +591,8 @@ func set_mode(new_mode: EditMode) -> void:
 
 
 func update_preview() -> void:
-	if not is_instance_valid(vehicle):
+	var host: Object = active_turret if is_instance_valid(active_turret) else vehicle
+	if not is_instance_valid(host):
 		clear_preview_block()
 		return
 	var camera := get_viewport().get_camera_2d()
@@ -436,7 +600,7 @@ func update_preview() -> void:
 		clear_preview_block()
 		return
 	var mouse := camera.get_global_mouse_position()
-	preview_cell = vehicle.world_to_cell(mouse)
+	preview_cell = host.call("world_to_cell", mouse)
 	if edit_mode == EditMode.DISMANTLE:
 		clear_preview_block()
 		update_vehicle_removal_hover()
@@ -452,13 +616,17 @@ func update_preview() -> void:
 	):
 		create_preview_block()
 
-	preview_block.update_transform(vehicle, preview_cell, preview_rotation)
-	vehicle.can_place_block(preview_block, preview_cell)
+	if host is Turret:
+		preview_block.update_turret_transform(host as Turret, preview_cell, preview_rotation)
+	else:
+		preview_block.update_transform(vehicle, preview_cell, preview_rotation)
+	host.call("can_place_block", preview_block, preview_cell)
 
 
 func create_preview_block() -> void:
 	clear_preview_block()
-	if selected_block == null or not is_instance_valid(vehicle):
+	var host: Node = active_turret if is_instance_valid(active_turret) else vehicle
+	if selected_block == null or not is_instance_valid(host):
 		return
 	var preview_scene := BlockDB.get_scene(selected_block.block_id)
 	if preview_scene == null:
@@ -467,7 +635,7 @@ func create_preview_block() -> void:
 	if preview_block == null:
 		return
 	preview_block.block_id = selected_block.block_id
-	vehicle.add_child(preview_block)
+	host.add_child(preview_block)
 	preview_block.vehicle = vehicle
 	preview_block.set_process(false)
 	preview_block.set_physics_process(false)
@@ -496,14 +664,15 @@ func clear_preview_block() -> void:
 
 
 func update_vehicle_removal_hover() -> void:
-	if not is_instance_valid(vehicle):
+	var host: Node2D = active_turret if is_instance_valid(active_turret) else vehicle
+	if not is_instance_valid(host):
 		clear_removal_hover()
 		return
 	var cells: Array[Vector2i] = []
-	var block := vehicle.get_block(preview_cell)
+	var block: Block = host.call("get_block", preview_cell) as Block
 	if block != null:
 		cells = block.get_occupied_cells()
-	else:
+	elif not is_instance_valid(active_turret):
 		for record: Array in vehicle.blueprint_blocks:
 			var record_cells := VehicleBlueprint.get_record_cells(record)
 			if record_cells.has(preview_cell):
@@ -513,12 +682,13 @@ func update_vehicle_removal_hover() -> void:
 		clear_removal_hover()
 		return
 	var overlay := ensure_removal_hover()
-	overlay.attach_to(vehicle)
+	overlay.attach_to(host)
 	var centers: Array[Vector2] = []
 	for cell: Vector2i in cells:
 		centers.append(
-			(Vector2(cell) + Vector2(0.5, 0.5))
-			* Globals.TILE_SIZE
+			active_turret.cell_to_local_center(cell)
+			if is_instance_valid(active_turret)
+			else (Vector2(cell) + Vector2(0.5, 0.5)) * Globals.TILE_SIZE
 		)
 	overlay.show_centers(centers)
 
@@ -539,7 +709,8 @@ func world_to_screen(world_pos: Vector2) -> Vector2:
 
 
 func place_block() -> void:
-	if not is_instance_valid(vehicle) or selected_block == null:
+	var host: Object = active_turret if is_instance_valid(active_turret) else vehicle
+	if not is_instance_valid(host) or selected_block == null:
 		return
 	var block_id := selected_block.block_id
 	var block_scene := BlockDB.get_scene(block_id)
@@ -549,7 +720,7 @@ func place_block() -> void:
 	if not _can_place_selected_block(block_scene):
 		if (
 			is_instance_valid(preview_block)
-			and vehicle.can_place_block(preview_block, preview_cell)
+			and bool(host.call("can_place_block", preview_block, preview_cell))
 			and is_instance_valid(active_workshop)
 			and not active_workshop.is_vehicle_layout_inside(
 				vehicle,
@@ -574,7 +745,12 @@ func place_block() -> void:
 		)
 		return
 
-	if not vehicle.place_block(block_scene, preview_cell, preview_rotation):
+	var placed: bool = (
+		active_turret.place_block(block_scene, preview_cell, preview_rotation)
+		if is_instance_valid(active_turret)
+		else vehicle.place_block(block_scene, preview_cell, preview_rotation)
+	)
+	if not placed:
 		ConstructionSupport.refund(payment["withdrawals"])
 		_show_status("Cannot build here; materials returned")
 		return
@@ -589,18 +765,22 @@ func place_block() -> void:
 
 
 func _can_place_selected_block(block_scene: PackedScene) -> bool:
+	var host: Object = active_turret if is_instance_valid(active_turret) else vehicle
 	if is_instance_valid(preview_block):
 		return (
-			vehicle.can_place_block(preview_block, preview_cell)
+			bool(host.call("can_place_block", preview_block, preview_cell))
 			and _is_candidate_inside_workshop(preview_block)
 		)
 	var candidate := block_scene.instantiate() as Block
 	if candidate == null:
 		return false
 	candidate.block_id = selected_block.block_id
-	candidate.update_transform(vehicle, preview_cell, preview_rotation)
+	if is_instance_valid(active_turret):
+		candidate.update_turret_transform(active_turret, preview_cell, preview_rotation)
+	else:
+		candidate.update_transform(vehicle, preview_cell, preview_rotation)
 	var can_place := (
-		vehicle.can_place_block(candidate, preview_cell)
+		bool(host.call("can_place_block", candidate, preview_cell))
 		and _is_candidate_inside_workshop(candidate)
 	)
 	candidate.free()
@@ -608,6 +788,8 @@ func _can_place_selected_block(block_scene: PackedScene) -> bool:
 
 
 func _is_candidate_inside_workshop(candidate: Block) -> bool:
+	if is_instance_valid(active_turret):
+		return true
 	return (
 		is_instance_valid(active_workshop)
 		and is_instance_valid(vehicle)
@@ -616,6 +798,9 @@ func _is_candidate_inside_workshop(candidate: Block) -> bool:
 
 
 func _get_construction_storages() -> Array[ItemStorage]:
+	if is_instance_valid(active_turret_mount):
+		var assembly := active_turret_mount.get_assembly()
+		return assembly.get_construction_storages() if assembly != null else []
 	return ConstructionSupport.get_vehicle_construction_storages(
 		vehicle,
 		active_workshop_building
@@ -623,6 +808,11 @@ func _get_construction_storages() -> Array[ItemStorage]:
 
 
 func remove_block() -> void:
+	if is_instance_valid(active_turret):
+		var turret_block := active_turret.get_block(preview_cell)
+		if turret_block != null:
+			active_turret.destroy_block(turret_block)
+		return
 	if not is_instance_valid(vehicle):
 		return
 	var block := vehicle.get_block(preview_cell)
@@ -724,7 +914,10 @@ func _on_dismantle_button_pressed() -> void:
 
 
 func _on_finish_button_pressed() -> void:
-	finish_workshop_edit()
+	if is_instance_valid(active_turret):
+		finish_turret_edit()
+	else:
+		finish_workshop_edit()
 
 
 func _on_auto_construct_button_pressed() -> void:

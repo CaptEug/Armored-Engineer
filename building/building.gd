@@ -45,10 +45,16 @@ func refresh_functional_state(
 	preferred_control: ControlBlock = active_control_block
 ) -> void:
 	vehicle_bays.clear()
+	var assembly_blocks: Array[Block] = []
 	for block: Block in functional_blocks:
+		assembly_blocks.append(block)
 		if block is VehicleBayBlock:
 			vehicle_bays.append(block as VehicleBayBlock)
-	block_assembly.rebuild(functional_blocks, preferred_control)
+		if block is TurretMount:
+			var turret := (block as TurretMount).turret
+			if is_instance_valid(turret):
+				assembly_blocks.append_array(turret.blocks)
+	block_assembly.rebuild(assembly_blocks, preferred_control)
 
 
 func is_vehicle_workshop() -> bool:
@@ -203,6 +209,11 @@ func get_total_mass() -> float:
 			* float(stored_units)
 			/ float(base_units)
 		)
+		var functional := world_block_layer.functional_nodes.get(anchor) as Block
+		if functional is TurretMount:
+			var turret := (functional as TurretMount).turret
+			if is_instance_valid(turret):
+				result += turret.get_total_mass()
 	return result
 
 

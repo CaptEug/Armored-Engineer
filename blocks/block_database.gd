@@ -11,6 +11,7 @@ const INFO_WEAPON := "res://ui/block_info/weapon_info.tscn"
 const INFO_CONTROL := "res://ui/block_info/control_info.tscn"
 const INFO_DRILL := "res://ui/block_info/drill_info.tscn"
 const INFO_VEHICLE_BAY := "res://ui/block_info/vehiclebay_info.tscn"
+const INFO_TURRET_MOUNT := "res://ui/block_info/turret_mount_info.tscn"
 
 # Integer block IDs are the compact runtime/save identity. block_name is the
 # stable String identity used by developer-authored data.
@@ -225,6 +226,22 @@ var blocks := {
 		"kinetic_damage_multiplier": 0.0,
 		"explosive_damage_multiplier": 1.0,
 		"color": Color(0.24, 0.52, 0.58),
+		"construction_cost": {},
+	},
+	15: {
+		"block_name": "3x3 Turret Mount",
+		"block_class": CLASS_CONSTRUCTED,
+		"allowed_hosts": [HOST_WORLD, HOST_VEHICLE],
+		"scene_path": "res://turret/turret_mount.tscn",
+		"info_section_path": INFO_TURRET_MOUNT,
+		"world_functional": true,
+		"size": Vector2i(3, 3),
+		"rotatable": true,
+		"max_hp": 300.0,
+		"mass": 15.0,
+		"kinetic_damage_multiplier": 1.0,
+		"explosive_damage_multiplier": 1.0,
+		"color": Color(0.34, 0.36, 0.39),
 		"construction_cost": {},
 	},
 }

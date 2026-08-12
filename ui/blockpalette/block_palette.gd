@@ -9,6 +9,7 @@ var selected_block : Block
 var zoom:int = 2
 var max_zoom:int = 4
 var min_zoom:int = 1
+var turret_mode := false
 
 
 func _ready():
@@ -16,12 +17,14 @@ func _ready():
 		var block := child as Block
 		if block == null:
 			continue
-		if not _is_available(block):
-			block.hide()
-			block.process_mode = Node.PROCESS_MODE_DISABLED
-			continue
 		blocks.append(block)
 		create_button(block)
+		block.visible = _is_available(block)
+		block.process_mode = Node.PROCESS_MODE_DISABLED
+	for child: Node in get_children():
+		var button := child as BlockButton
+		if button != null:
+			button.visible = _is_available(button.block)
 	scale = Vector2(zoom, zoom)
 
 
@@ -40,6 +43,34 @@ func create_button(block : Block):
 	button.block = block
 	button.intiatialize()
 	add_child(button)
+
+
+func set_turret_mode(enabled: bool) -> void:
+	turret_mode = enabled
+	selected_block = null
+	for block: Block in blocks:
+		block.visible = (
+			_is_turret_block_allowed(block)
+			if enabled
+			else _is_available(block)
+		)
+	for child: Node in get_children():
+		var button := child as BlockButton
+		if button != null:
+			button.visible = (
+				_is_turret_block_allowed(button.block)
+				if enabled
+				else _is_available(button.block)
+			)
+
+
+func _is_turret_block_allowed(block: Block) -> bool:
+	return (
+		block != null
+		and BlockDB.is_constructed(block.block_id)
+		and not block is Track
+		and not block is TurretMount
+	)
 
 
 func _on_zoom_in_button_pressed():

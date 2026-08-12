@@ -5,6 +5,7 @@ signal target_invalidated
 
 var target_block: Block
 var _summary_text := ""
+var _turret_edit_button: Button
 
 @onready var read_only_area: VBoxContainer = $ReadOnly
 @onready var summary_label: Label = $ReadOnly/Summary
@@ -27,11 +28,15 @@ func bind_block(block: Block, summary: String) -> bool:
 		target_block.health_changed.connect(_on_health_changed)
 		target_block.block_destroyed.connect(_on_block_destroyed)
 	_bind_target()
+	_add_turret_edit_button()
 	refresh()
 	return true
 
 
 func unbind_block() -> void:
+	if is_instance_valid(_turret_edit_button):
+		_turret_edit_button.queue_free()
+	_turret_edit_button = null
 	_unbind_target()
 	if is_instance_valid(target_block):
 		if target_block.health_changed.is_connected(_on_health_changed):
@@ -97,6 +102,24 @@ func _set_mouse_filter_recursive(
 	for child: Node in control.get_children():
 		if child is Control:
 			_set_mouse_filter_recursive(child as Control, filter)
+
+
+func _add_turret_edit_button() -> void:
+	if not is_instance_valid(target_block) or not target_block.block_host is Turret:
+		return
+	_turret_edit_button = Button.new()
+	_turret_edit_button.text = "Edit Turret"
+	_turret_edit_button.pressed.connect(_on_turret_edit_pressed)
+	configurable_area.add_child(_turret_edit_button)
+
+
+func _on_turret_edit_pressed() -> void:
+	if not is_instance_valid(target_block) or not target_block.block_host is Turret:
+		return
+	var turret := target_block.block_host as Turret
+	var editor := get_tree().get_first_node_in_group("vehicle_editor") as VehicleEditor
+	if editor != null:
+		editor.begin_turret_edit(turret.mount)
 
 
 func _on_health_changed() -> void:

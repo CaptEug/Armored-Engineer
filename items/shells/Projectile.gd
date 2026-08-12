@@ -17,6 +17,7 @@ enum ShellType {
 @export_range(0.0, 1.0, 0.01) var ricochet_loss: float = 0.5
 
 var source_vehicle: Vehicle
+var source_turret: Turret
 var source_assembly: BlockAssembly
 var source_weapon: Weapon
 var spawn_position := Vector2.ZERO
@@ -40,6 +41,8 @@ func _ready() -> void:
 	remaining_K_DMG = maxf(max_K_DMG, 0.0)
 	var shell_body := get_node_or_null("Area2D") as Area2D
 	if shell_body != null:
+		shell_body.collision_layer = 0
+		shell_body.collision_mask = 0
 		shell_body.monitoring = false
 		shell_body.monitorable = false
 
@@ -69,11 +72,14 @@ func _physics_process(_delta: float) -> void:
 	var exclusions: Array[RID] = [get_rid()]
 	if not source_cleared and is_instance_valid(source_vehicle):
 		exclusions.append(source_vehicle.get_rid())
+	if is_instance_valid(source_turret):
+		exclusions.append(source_turret.get_rid())
 	if is_instance_valid(traversing_vehicle):
 		exclusions.append(traversing_vehicle.get_rid())
 	traversing_vehicle = null
 
 	var query := PhysicsRayQueryParameters2D.create(from, to, 3, exclusions)
+	query.collide_with_areas = true
 	var hit := get_world_2d().direct_space_state.intersect_ray(query)
 	if hit.is_empty():
 		last_pos = to
@@ -82,7 +88,23 @@ func _physics_process(_delta: float) -> void:
 	var collider: Object = hit.get("collider")
 	var hit_position: Vector2 = hit.get("position", to)
 	var hit_normal: Vector2 = hit.get("normal", Vector2.ZERO)
-	if collider is Vehicle:
+	if collider is Turret:
+		var target_turret := collider as Turret
+		if (
+			source_assembly != null
+			and target_turret.get_assembly_at(Vector2i.ZERO) == source_assembly
+		):
+			last_pos = hit_position + (to - from).normalized()
+			return
+		_handle_turret_impact(
+			target_turret,
+			int(hit.get("shape", -1)),
+			hit_position,
+			hit_normal,
+			(to - from).normalized()
+		)
+		return
+	elif collider is Vehicle:
 		traversing_vehicle = collider as Vehicle
 		if _trace_vehicle_cells(
 			traversing_vehicle,
@@ -114,6 +136,44 @@ func _physics_process(_delta: float) -> void:
 		return
 
 	last_pos = to
+
+
+func _handle_turret_impact(
+	target_turret: Turret,
+	shape_index: int,
+	hit_position: Vector2,
+	hit_normal: Vector2,
+	direction: Vector2
+) -> void:
+	var block := target_turret.get_block_for_shape(shape_index)
+	if block == null:
+		block = target_turret.get_block(target_turret.world_to_cell(hit_position))
+	if block == null:
+		_handle_world_impact(hit_position, hit_normal)
+		return
+	if shell_type != ShellType.HE and _should_ricochet(direction, hit_normal):
+		ricochet(hit_normal, hit_position)
+		return
+	global_position = hit_position + direction.normalized()
+	if shell_type == ShellType.HE:
+		explode()
+		queue_free()
+		return
+	var result := target_turret.damage_block_at(
+		block.origin_cell,
+		remaining_K_DMG,
+		&"KINETIC"
+	)
+	remaining_K_DMG = maxf(
+		remaining_K_DMG - float(result["damage_consumed"]),
+		0.0
+	)
+	if bool(result["destroyed"]) and remaining_K_DMG > 0.001:
+		last_pos = global_position
+		return
+	if shell_type == ShellType.APHE:
+		explode()
+	queue_free()
 
 func _trace_vehicle_cells(
 	target_vehicle: Vehicle,

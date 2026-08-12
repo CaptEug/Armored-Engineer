@@ -131,6 +131,31 @@ func update_world_transform(
 	rotation = rotation_index * PI * 0.5
 
 
+func update_turret_transform(
+	turret_host: Turret,
+	cell: Vector2i,
+	rotation_i: int
+) -> void:
+	vehicle = (
+		turret_host.mount.get_assembly().host as Vehicle
+		if is_instance_valid(turret_host.mount)
+		and turret_host.mount.get_assembly() != null
+		and turret_host.mount.get_assembly().host is Vehicle
+		else null
+	)
+	block_host = turret_host
+	assembly = turret_host.get_assembly_at(cell)
+	_hp_managed_by_host = false
+	origin_cell = cell
+	rotation_index = BlockDB.normalize_rotation(block_id, rotation_i)
+	position = (
+		Vector2(origin_cell)
+		+ Vector2(get_rotated_size()) * 0.5
+		- turret_host.get_pivot_cells()
+	) * TILE_SIZE
+	rotation = rotation_index * PI * 0.5
+
+
 func get_assembly() -> BlockAssembly:
 	if (
 		block_host != null

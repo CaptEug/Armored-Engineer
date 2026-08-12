@@ -37,6 +37,21 @@ func _physics_process(_delta: float) -> void:
 		building.update_functional_systems()
 
 
+func refresh_building_activity(building: Building) -> void:
+	_active_buildings.erase(building)
+	if building == null:
+		return
+	if building.block_assembly.power_consumers.is_empty():
+		for engine: PowerPack in building.block_assembly.engines:
+			engine.power_target = 0.0
+		return
+	if building.block_assembly.engines.is_empty():
+		for consumer: Block in building.block_assembly.power_consumers:
+			consumer.set_supplied_power(0.0)
+		return
+	_active_buildings.append(building)
+
+
 func begin_bulk_edit() -> void:
 	_bulk_edit_depth += 1
 
@@ -319,14 +334,7 @@ func _create_building(
 	):
 		preferred_control = inherited.active_control_block
 	building.refresh_functional_state(preferred_control)
-	if building.block_assembly.power_consumers.is_empty():
-		for engine: PowerPack in building.block_assembly.engines:
-			engine.power_target = 0.0
-	elif building.block_assembly.engines.is_empty():
-		for consumer: Block in building.block_assembly.power_consumers:
-			consumer.set_supplied_power(0.0)
-	else:
-		_active_buildings.append(building)
+	refresh_building_activity(building)
 	buildings.append(building)
 
 

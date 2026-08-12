@@ -21,8 +21,11 @@ func rebuild_component_network() -> void:
 	block_group_map.clear()
 	avaliable_engines.clear()
 	active_tracks.clear()
-	for block in vehicle.blocks:
+	for block: Block in vehicle.block_assembly.blocks:
 		var component_index := vehicle.get_component_index(block)
+		if block.block_host is Turret:
+			var turret := block.block_host as Turret
+			component_index = vehicle.get_component_index(turret.mount)
 		if component_index < 0:
 			continue
 		block_group_map[block] = component_index

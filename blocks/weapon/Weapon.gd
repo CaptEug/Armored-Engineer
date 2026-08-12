@@ -286,6 +286,7 @@ func _spawn_projectile(muzzle: Marker2D, shell_scene: PackedScene) -> bool:
 		else null
 	)
 	shell.source_weapon = self
+	shell.source_turret = block_host as Turret if block_host is Turret else null
 	shell.global_position = muzzle.global_position
 	shell.spawn_position = muzzle.global_position
 	shell.rotation = direction.angle() + PI * 0.5

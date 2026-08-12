@@ -131,6 +131,8 @@ func update_vehicle():
 	var mass_sum := 0.0
 	for block in blocks:
 		mass_sum += block.mass
+		if block is TurretMount and is_instance_valid((block as TurretMount).turret):
+			mass_sum += (block as TurretMount).turret.get_total_mass()
 	total_mass = mass_sum
 	mass = maxf(total_mass, 0.01)
 	
@@ -674,11 +676,19 @@ func supply_liquids(
 func refresh_system_lists() -> void:
 	var previous_control := active_control_block
 	tracks.clear()
+	var assembly_blocks: Array[Block] = []
 	
 	for block in blocks:
+		assembly_blocks.append(block)
 		if block is Track:
 			tracks.append(block as Track)
-	block_assembly.rebuild(blocks, previous_control)
+		if block is TurretMount:
+			var turret := (block as TurretMount).turret
+			if is_instance_valid(turret):
+				for turret_block: Block in turret.blocks:
+					turret_block.vehicle = self
+				assembly_blocks.append_array(turret.blocks)
+	block_assembly.rebuild(assembly_blocks, previous_control)
 	
 	rebuild_block_connectivity()
 	rebuild_tracks_connections()
@@ -790,6 +800,8 @@ func calculate_center_of_mass() -> Vector2:
 	
 	for block in blocks:
 		var block_mass = block.mass
+		if block is TurretMount and is_instance_valid((block as TurretMount).turret):
+			block_mass += (block as TurretMount).turret.get_total_mass()
 		# center position of the block
 		var block_COM = block.position
 		weighted_sum += Vector2(block_COM) * block_mass

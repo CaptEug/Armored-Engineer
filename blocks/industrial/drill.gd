@@ -146,7 +146,7 @@ func _collect_damage_targets() -> Array[Dictionary]:
 	query.shape = _query_shape
 	query.transform = _query_shape_source.global_transform
 	query.collision_mask = drill_area.collision_mask
-	query.collide_with_areas = false
+	query.collide_with_areas = true
 	query.collide_with_bodies = true
 	var current_assembly := get_assembly()
 	if (
@@ -274,6 +274,19 @@ func _resolve_damage_target(hit: Dictionary) -> Dictionary:
 			"host": target_vehicle,
 			"cell": target_block.origin_cell,
 			"block_id": target_block.block_id,
+		}
+	if collider is Turret:
+		var target_turret := collider as Turret
+		if target_turret.get_assembly_at(Vector2i.ZERO) == get_assembly():
+			return {}
+		var turret_block := target_turret.get_block_for_shape(shape_index)
+		if turret_block == null:
+			return {}
+		return {
+			"key": "block:%d" % turret_block.get_instance_id(),
+			"host": target_turret,
+			"cell": turret_block.origin_cell,
+			"block_id": turret_block.block_id,
 		}
 	if collider is WorldBlockBody:
 		var world_body := collider as WorldBlockBody

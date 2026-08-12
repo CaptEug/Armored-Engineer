@@ -1,0 +1,48 @@
+[gd_scene format=3]
+
+[ext_resource type="Theme" path="res://assets/resources/tooltip_theme.tres" id="1_theme"]
+[ext_resource type="Script" path="res://ui/block_info/turret_mount_info.gd" id="2_script"]
+
+[node name="TurretMountBlockInfo" type="VBoxContainer"]
+theme = ExtResource("1_theme")
+theme_override_constants/separation = 8
+script = ExtResource("2_script")
+
+[node name="ReadOnly" type="VBoxContainer" parent="."]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 6
+
+[node name="Summary" type="Label" parent="ReadOnly"]
+layout_mode = 2
+text = "HP: 0 / 0"
+
+[node name="Mass" type="Label" parent="ReadOnly"]
+layout_mode = 2
+text = "Turret mass: 0 / 0"
+
+[node name="Radius" type="Label" parent="ReadOnly"]
+layout_mode = 2
+text = "Radius: 0 / 0 cells"
+
+[node name="Power" type="Label" parent="ReadOnly"]
+layout_mode = 2
+text = "Traverse power: 0%"
+
+[node name="ConfigSeparator" type="HSeparator" parent="."]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Configurable" type="VBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="EditButton" type="Button" parent="Configurable"]
+layout_mode = 2
+text = "Edit Turret"
+
+[node name="Status" type="Label" parent="Configurable"]
+layout_mode = 2
+autowrap_mode = 2
+
+[connection signal="pressed" from="Configurable/EditButton" to="." method="_on_edit_button_pressed"]

@@ -15,9 +15,12 @@ func _ready() -> void:
 
 
 func apply_explosion() -> void:
-	for body in get_overlapping_bodies():
-		if body is Vehicle:
-			apply_explosion_to_vehicle(body as Vehicle)
+	for node: Node in get_tree().get_nodes_in_group("vehicles"):
+		if node is Vehicle:
+			apply_explosion_to_vehicle(node as Vehicle)
+	for node: Node in get_tree().get_nodes_in_group("turrets"):
+		if node is Turret:
+			apply_explosion_to_turret(node as Turret)
 	for wall_node: Node in get_tree().get_nodes_in_group(
 		"world_block_layers"
 	):
@@ -29,6 +32,27 @@ func apply_explosion() -> void:
 			)
 	
 	queue_free()
+
+
+func apply_explosion_to_turret(turret: Turret) -> void:
+	var hit_blocks := {}
+	var center_cell := turret.world_to_cell(global_position)
+	for y in range(-radius, radius + 1):
+		for x in range(-radius, radius + 1):
+			var block := turret.get_block(center_cell + Vector2i(x, y))
+			if block == null:
+				continue
+			var distance := global_position.distance_to(block.global_position)
+			var distance_tiles := distance / float(Globals.TILE_SIZE)
+			if radius > 0 and distance_tiles > float(radius):
+				continue
+			var factor := 1.0 if radius <= 0 else 1.0 - distance_tiles / float(radius)
+			hit_blocks[block] = maxf(
+				float(hit_blocks.get(block, 0.0)),
+				max_damage * factor
+			)
+	for block: Block in hit_blocks:
+		turret.damage_block_at(block.origin_cell, float(hit_blocks[block]), &"EXPLOSIVE")
 
 
 func apply_explosion_to_vehicle(vehicle: Vehicle) -> void:

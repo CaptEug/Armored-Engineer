@@ -92,6 +92,8 @@ func _update_hover_target() -> void:
 	query.collide_with_bodies = true
 
 	var vehicle: Vehicle
+	var turret: Turret
+	var turret_shape_index := -1
 	var detected_world_block: Block
 	var world_blocks: WorldBlockLayer
 	var liquid_layer: LiquidLayer
@@ -102,6 +104,9 @@ func _update_hover_target() -> void:
 		var collider: Object = hit.get("collider")
 		if collider is Vehicle:
 			vehicle = collider as Vehicle
+		elif collider is Turret:
+			turret = collider as Turret
+			turret_shape_index = int(hit.get("shape", -1))
 		elif collider is Area2D:
 			var area_block := (collider as Area2D).get_parent() as Block
 			if area_block is VehicleBayBlock:
@@ -115,7 +120,12 @@ func _update_hover_target() -> void:
 		elif collider is LiquidLayer:
 			liquid_layer = collider as LiquidLayer
 
-	if vehicle != null:
+	if turret != null:
+		var turret_block := turret.get_block_for_shape(turret_shape_index)
+		if turret_block == null:
+			turret_block = turret.get_block(turret.world_to_cell(world_position))
+		_show_live_block(turret_block)
+	elif vehicle != null:
 		_show_vehicle_block(vehicle, world_position)
 	elif is_instance_valid(detected_world_block):
 		_show_live_block(detected_world_block)
