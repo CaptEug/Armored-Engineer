@@ -1,41 +1,188 @@
 [gd_scene format=3 uid="uid://cy5y2mqj5bxgy"]
 
-[ext_resource type="Theme" uid="uid://djb1bkq82a1wy" path="res://assets/resources/UI_theme.tres" id="1_rbyyf"]
-[ext_resource type="Script" uid="uid://cgxk62odscflu" path="res://ui/world_ui/hud.gd" id="2_546lt"]
-[ext_resource type="Texture2D" uid="uid://6d4bdslmcutd" path="res://assets/icons/icons.png" id="3_546lt"]
+[ext_resource type="Theme" uid="uid://djb1bkq82a1wy" path="res://assets/resources/UI_theme.tres" id="1_theme"]
+[ext_resource type="Script" uid="uid://cgxk62odscflu" path="res://ui/world_ui/hud.gd" id="2_script"]
+[ext_resource type="Texture2D" uid="uid://6d4bdslmcutd" path="res://assets/icons/icons.png" id="3_icons"]
+[ext_resource type="Texture2D" uid="uid://cbeoshr0k0075" path="res://assets/style_tex.png" id="4_style"]
+[ext_resource type="PackedScene" uid="uid://cm0v65jmp7f6n" path="res://ui/blockpalette/block_palette.tscn" id="5_palette"]
+[ext_resource type="Script" uid="uid://ddh6jgn0kda8a" path="res://ui/blockpalette/palette_panel.gd" id="6_palette_panel"]
+[ext_resource type="Texture2D" uid="uid://cjkyiyg0n6t0e" path="res://assets/icons/icons_small.png" id="7_symbols"]
 
-[sub_resource type="AtlasTexture" id="AtlasTexture_en2x2"]
-atlas = ExtResource("3_546lt")
+[sub_resource type="AtlasTexture" id="SaveIcon"]
+atlas = ExtResource("3_icons")
+region = Rect2(0, 96, 32, 32)
+
+[sub_resource type="AtlasTexture" id="LoadIcon"]
+atlas = ExtResource("3_icons")
+region = Rect2(0, 128, 32, 32)
+
+[sub_resource type="AtlasTexture" id="DismantleIcon"]
+atlas = ExtResource("3_icons")
+region = Rect2(32, 128, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AutoIcon"]
+atlas = ExtResource("3_icons")
+region = Rect2(64, 128, 32, 32)
+
+[sub_resource type="AtlasTexture" id="SettingsIcon"]
+atlas = ExtResource("3_icons")
 region = Rect2(128, 128, 32, 32)
 
-[sub_resource type="AtlasTexture" id="AtlasTexture_7ihmi"]
-atlas = ExtResource("3_546lt")
+[sub_resource type="AtlasTexture" id="BuildIcon"]
+atlas = ExtResource("3_icons")
 region = Rect2(0, 192, 32, 32)
 
-[sub_resource type="AtlasTexture" id="AtlasTexture_1v5rv"]
-atlas = ExtResource("3_546lt")
+[sub_resource type="AtlasTexture" id="MapIcon"]
+atlas = ExtResource("3_icons")
 region = Rect2(64, 96, 32, 32)
 
-[node name="Hud" type="Panel" unique_id=1449432998]
+[sub_resource type="AtlasTexture" id="FrameTexture"]
+atlas = ExtResource("4_style")
+region = Rect2(240, 96, 48, 48)
+
+[sub_resource type="StyleBoxTexture" id="FrameStyle"]
+texture = SubResource("FrameTexture")
+texture_margin_left = 8.0
+texture_margin_top = 8.0
+texture_margin_right = 8.0
+texture_margin_bottom = 8.0
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
+
+[sub_resource type="AtlasTexture" id="InnerTexture"]
+atlas = ExtResource("4_style")
+region = Rect2(192, 96, 48, 48)
+
+[sub_resource type="StyleBoxTexture" id="InnerStyle"]
+texture = SubResource("InnerTexture")
+texture_margin_left = 16.0
+texture_margin_top = 16.0
+texture_margin_right = 16.0
+texture_margin_bottom = 16.0
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
+
+[sub_resource type="AtlasTexture" id="ZoomInIcon"]
+atlas = ExtResource("7_symbols")
+region = Rect2(176, 32, 16, 16)
+
+[sub_resource type="AtlasTexture" id="ZoomOutIcon"]
+atlas = ExtResource("7_symbols")
+region = Rect2(192, 32, 16, 16)
+
+[sub_resource type="AtlasTexture" id="ComIcon"]
+atlas = ExtResource("7_symbols")
+region = Rect2(224, 32, 16, 16)
+
+[node name="Hud" type="Control" unique_id=1701911192]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme = ExtResource("1_theme")
+script = ExtResource("2_script")
+
+[node name="NormalBar" type="Panel" parent="." unique_id=538185727]
+layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
 offset_bottom = 38.0
 grow_horizontal = 2
-theme = ExtResource("1_rbyyf")
-script = ExtResource("2_546lt")
 
-[node name="SettingsButton" type="TextureButton" parent="." unique_id=1290269008]
+[node name="EditorToolbar" type="HBoxContainer" parent="NormalBar" unique_id=1237517003]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 4.0
+offset_top = 2.0
+offset_right = -4.0
+offset_bottom = -2.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 6
+
+[node name="ModeTitle" type="Label" parent="NormalBar/EditorToolbar" unique_id=697697133]
+custom_minimum_size = Vector2(40, 0)
+layout_mode = 2
+text = "EDIT"
+vertical_alignment = 1
+
+[node name="SaveButton" type="TextureButton" parent="NormalBar/EditorToolbar" unique_id=1435823010]
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+size_flags_horizontal = 4
+tooltip_text = "Save vehicle blueprint"
+focus_mode = 0
+mouse_default_cursor_shape = 2
+texture_normal = SubResource("SaveIcon")
+
+[node name="LoadButton" type="TextureButton" parent="NormalBar/EditorToolbar" unique_id=1377772828]
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+size_flags_horizontal = 4
+tooltip_text = "Load vehicle blueprint"
+focus_mode = 0
+mouse_default_cursor_shape = 2
+texture_normal = SubResource("LoadIcon")
+
+[node name="DismantleButton" type="TextureButton" parent="NormalBar/EditorToolbar" unique_id=634955862]
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+size_flags_horizontal = 4
+tooltip_text = "Toggle dismantling"
+focus_mode = 0
+mouse_default_cursor_shape = 2
+toggle_mode = true
+texture_normal = SubResource("DismantleIcon")
+
+[node name="AutoConstructButton" type="TextureButton" parent="NormalBar/EditorToolbar" unique_id=217987784]
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+size_flags_horizontal = 4
+tooltip_text = "Auto-construct missing vehicle blocks"
+focus_mode = 0
+mouse_default_cursor_shape = 2
+texture_normal = SubResource("AutoIcon")
+
+[node name="CoMButton" type="CheckButton" parent="NormalBar/EditorToolbar" unique_id=59558743]
+layout_mode = 2
+size_flags_horizontal = 4
+tooltip_text = "Show center of mass"
+focus_mode = 0
+mouse_default_cursor_shape = 2
+text = "CoM"
+
+[node name="Status" type="Label" parent="NormalBar/EditorToolbar" unique_id=563789260]
+custom_minimum_size = Vector2(180, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+vertical_alignment = 1
+
+[node name="FinishButton" type="Button" parent="NormalBar/EditorToolbar" unique_id=588634074]
+custom_minimum_size = Vector2(148, 32)
+layout_mode = 2
+tooltip_text = "Finish editing"
+focus_mode = 0
+mouse_default_cursor_shape = 2
+text = "Finish Editing"
+
+[node name="SettingsButton" type="TextureButton" parent="NormalBar" unique_id=274866447]
 layout_mode = 0
 offset_left = 4.0
 offset_top = 2.0
 offset_right = 36.0
 offset_bottom = 34.0
-tooltip_text = "settings"
+tooltip_text = "Settings"
 focus_mode = 0
 mouse_default_cursor_shape = 2
-texture_normal = SubResource("AtlasTexture_en2x2")
+texture_normal = SubResource("SettingsIcon")
 
-[node name="BuildButton" type="TextureButton" parent="." unique_id=1979975251]
+[node name="BuildButton" type="TextureButton" parent="NormalBar" unique_id=335305493]
 layout_mode = 0
 offset_left = 339.0
 offset_top = 2.0
@@ -45,21 +192,20 @@ tooltip_text = "Construct building"
 focus_mode = 0
 mouse_default_cursor_shape = 2
 toggle_mode = true
-texture_normal = SubResource("AtlasTexture_7ihmi")
+texture_normal = SubResource("BuildIcon")
 
-[node name="MapButton" type="TextureButton" parent="." unique_id=2059256106]
+[node name="MapButton" type="TextureButton" parent="NormalBar" unique_id=2056506602]
 layout_mode = 0
 offset_left = 299.0
 offset_top = 2.0
 offset_right = 331.0
 offset_bottom = 34.0
-tooltip_text = "map
-"
+tooltip_text = "Map"
 focus_mode = 0
 mouse_default_cursor_shape = 2
-texture_normal = SubResource("AtlasTexture_1v5rv")
+texture_normal = SubResource("MapIcon")
 
-[node name="Clock" type="Label" parent="." unique_id=1088631270]
+[node name="Clock" type="Label" parent="NormalBar" unique_id=1897276018]
 layout_mode = 1
 anchors_preset = 6
 anchor_left = 1.0
@@ -74,6 +220,113 @@ grow_horizontal = 0
 grow_vertical = 2
 text = "00:00"
 
-[connection signal="pressed" from="SettingsButton" to="." method="_on_settings_button_pressed"]
-[connection signal="toggled" from="BuildButton" to="." method="_on_build_button_toggled"]
-[connection signal="pressed" from="MapButton" to="." method="_on_map_button_pressed"]
+[node name="EditorDock" type="Panel" parent="." unique_id=1793094556]
+visible = false
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -256.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="PaletteArea" type="MarginContainer" parent="EditorDock" unique_id=133821893]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="Panel" type="Panel" parent="EditorDock/PaletteArea" unique_id=678697667]
+layout_mode = 2
+theme_override_styles/panel = SubResource("FrameStyle")
+script = ExtResource("6_palette_panel")
+
+[node name="Clipper" type="Panel" parent="EditorDock/PaletteArea/Panel" unique_id=1363778424]
+clip_children = 1
+clip_contents = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 5.0
+offset_top = 5.0
+offset_right = -5.0
+offset_bottom = -5.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("InnerStyle")
+
+[node name="BlockPalette" parent="EditorDock/PaletteArea/Panel/Clipper" unique_id=1578237518 instance=ExtResource("5_palette")]
+layout_mode = 0
+
+[node name="ZoomInButton" type="TextureButton" parent="EditorDock/PaletteArea/Panel" unique_id=1248306773]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -44.0
+offset_top = -21.0
+offset_right = -28.0
+offset_bottom = -5.0
+grow_horizontal = 0
+grow_vertical = 0
+tooltip_text = "Zoom palette in"
+mouse_default_cursor_shape = 2
+texture_normal = SubResource("ZoomInIcon")
+
+[node name="ZoomOutButton" type="TextureButton" parent="EditorDock/PaletteArea/Panel" unique_id=1106847485]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -24.0
+offset_top = -21.0
+offset_right = -8.0
+offset_bottom = -5.0
+grow_horizontal = 0
+grow_vertical = 0
+tooltip_text = "Zoom palette out"
+mouse_default_cursor_shape = 2
+texture_normal = SubResource("ZoomOutIcon")
+
+[node name="BlueprintDialog" type="FileDialog" parent="." unique_id=774927156]
+title = "Vehicle Blueprint"
+initial_position = 2
+size = Vector2i(720, 520)
+access = 1
+filters = PackedStringArray("*.json ; Vehicle Blueprints")
+hidden_files_toggle_enabled = false
+folder_creation_enabled = false
+favorites_enabled = false
+recent_list_enabled = false
+
+[node name="COMicon" type="Sprite2D" parent="." unique_id=54618639]
+visible = false
+texture = SubResource("ComIcon")
+
+[connection signal="pressed" from="NormalBar/EditorToolbar/SaveButton" to="." method="_on_save_button_pressed"]
+[connection signal="pressed" from="NormalBar/EditorToolbar/LoadButton" to="." method="_on_load_button_pressed"]
+[connection signal="toggled" from="NormalBar/EditorToolbar/DismantleButton" to="." method="_on_dismantle_toggled"]
+[connection signal="pressed" from="NormalBar/EditorToolbar/AutoConstructButton" to="." method="_on_auto_construct_pressed"]
+[connection signal="toggled" from="NormalBar/EditorToolbar/CoMButton" to="." method="_on_com_toggled"]
+[connection signal="pressed" from="NormalBar/EditorToolbar/FinishButton" to="." method="_on_finish_pressed"]
+[connection signal="pressed" from="NormalBar/SettingsButton" to="." method="_on_settings_button_pressed"]
+[connection signal="toggled" from="NormalBar/BuildButton" to="." method="_on_build_button_toggled"]
+[connection signal="pressed" from="NormalBar/MapButton" to="." method="_on_map_button_pressed"]
+[connection signal="pressed" from="EditorDock/PaletteArea/Panel/ZoomInButton" to="EditorDock/PaletteArea/Panel/Clipper/BlockPalette" method="_on_zoom_in_button_pressed"]
+[connection signal="pressed" from="EditorDock/PaletteArea/Panel/ZoomOutButton" to="EditorDock/PaletteArea/Panel/Clipper/BlockPalette" method="_on_zoom_out_button_pressed"]
+[connection signal="canceled" from="BlueprintDialog" to="." method="_on_blueprint_dialog_canceled"]
+[connection signal="file_selected" from="BlueprintDialog" to="." method="_on_blueprint_file_selected"]

@@ -14,12 +14,6 @@ enum EditMode {
 	DISMANTLE,
 }
 
-enum BlueprintDialogMode {
-	NONE,
-	SAVE,
-	LOAD,
-}
-
 const DOCKING_LINEAR_SPEED_LIMIT := 2.0
 const DOCKING_ANGULAR_SPEED_LIMIT := 0.05
 
@@ -30,7 +24,6 @@ var preview_block: Block
 var preview_rotation := 0
 var interface_state := InterfaceState.CLOSED
 var edit_mode := EditMode.BUILD
-var blueprint_dialog_mode := BlueprintDialogMode.NONE
 var new_vehicle_index := 1
 var active_workshop: VehicleBayBlock
 var active_workshop_building: Building
@@ -40,14 +33,6 @@ var workshop_new_vehicle := false
 var _session_previous_freeze := false
 var _session_previous_camera_rotation := 0.0
 var removal_hover: RemovalOverlay
-
-@onready var editor_dock: Panel = $EditorDock
-@onready var palette: BlockPalette = (
-	$EditorDock/PaletteArea/Panel/Clipper/BlockPalette
-)
-@onready var com_icon: Sprite2D = $COMicon
-@onready var com_button: CheckButton = $EditorDock/EditorTools/CoMButton
-@onready var blueprint_dialog: FileDialog = $BlueprintDialog
 
 @export var gamemap: GameMap
 
@@ -80,20 +65,13 @@ func _process(_delta: float) -> void:
 		!= active_workshop_building
 	):
 		cancel_workshop_edit("Vehicle workshop changed")
-	selected_block = palette.selected_block
+	var hud := _get_hud()
+	selected_block = hud.get_selected_block() if hud != null else null
 	if is_editing_vehicle():
 		update_preview()
 	else:
 		clear_preview_block()
 		clear_removal_hover()
-	if (
-		is_editing_vehicle()
-		and is_instance_valid(vehicle)
-		and com_button.button_pressed
-	):
-		com_icon.position = world_to_screen(
-			vehicle.to_global(vehicle.center_of_mass)
-		)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -107,26 +85,18 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _handle_editor_input(event: InputEvent) -> void:
-	if event.is_action_pressed("ROTATE"):
-		if (
-			selected_block != null
-			and BlockDB.is_rotatable(selected_block.block_id)
-		):
-			preview_rotation = wrapi(preview_rotation + 1, 0, 4)
-		else:
-			preview_rotation = 0
-		return
-	if event is InputEventKey and event.pressed and event.keycode == KEY_X:
-		toggle_mode()
-		return
 	if not event is InputEventMouseButton or not event.pressed:
 		return
 
 	if event.button_index == MOUSE_BUTTON_RIGHT:
 		if edit_mode == EditMode.BUILD:
-			palette.selected_block = null
+			var hud := _get_hud()
+			if hud != null:
+				hud.clear_palette_selection()
 		else:
-			set_mode(EditMode.BUILD)
+			var hud := _get_hud()
+			if hud != null:
+				hud.set_dismantle_tool(false)
 		get_viewport().set_input_as_handled()
 		return
 	if event.button_index != MOUSE_BUTTON_LEFT:
@@ -171,7 +141,9 @@ func close_editor() -> void:
 		cancel_workshop_edit("Vehicle Bay editing cancelled")
 	clear_preview_block()
 	clear_removal_hover()
-	palette.selected_block = null
+	var hud := _get_hud()
+	if hud != null:
+		hud.clear_palette_selection()
 	if is_instance_valid(vehicle):
 		vehicle.set_blueprint_ghosts_visible(false)
 	interface_state = InterfaceState.CLOSED
@@ -413,22 +385,7 @@ func _session_error(message: String) -> Dictionary:
 
 
 func _apply_interface_state() -> void:
-	visible = is_editing_vehicle()
-	editor_dock.visible = true
-	if is_editing_vehicle():
-		move_to_front()
-		editor_dock.anchor_right = 1.0
-		editor_dock.offset_right = 0.0
-	com_icon.visible = (
-		is_editing_vehicle()
-		and is_instance_valid(vehicle)
-		and com_button.button_pressed
-	)
-	$EditorDock/EditorTools/SaveButton.show()
-	$EditorDock/EditorTools/LoadButton.show()
-	$EditorDock/EditorTools/AutoConstructButton.show()
-	com_button.show()
-	$EditorDock/FinishButton.tooltip_text = "Finish vehicle editing"
+	visible = false
 
 
 func toggle_mode() -> void:
@@ -444,6 +401,17 @@ func set_mode(new_mode: EditMode) -> void:
 	edit_mode = new_mode
 	clear_preview_block()
 	clear_removal_hover()
+
+
+func set_edit_tool(dismantle: bool) -> void:
+	set_mode(EditMode.DISMANTLE if dismantle else EditMode.BUILD)
+
+
+func rotate_preview() -> void:
+	if selected_block != null and BlockDB.is_rotatable(selected_block.block_id):
+		preview_rotation = wrapi(preview_rotation + 1, 0, 4)
+	else:
+		preview_rotation = 0
 
 
 func update_preview() -> void:
@@ -742,18 +710,6 @@ func _get_vehicle_under_mouse() -> Vehicle:
 	return null
 
 
-func _on_dismantle_button_pressed() -> void:
-	toggle_mode()
-
-
-func _on_finish_button_pressed() -> void:
-	finish_workshop_edit()
-
-
-func _on_auto_construct_button_pressed() -> void:
-	auto_construct_missing_blocks()
-
-
 func auto_construct_missing_blocks() -> void:
 	if not is_instance_valid(vehicle):
 		return
@@ -857,52 +813,7 @@ func _get_record_construction_cost(record: Array) -> Dictionary:
 	return cost
 
 
-func _on_save_button_pressed() -> void:
-	if not is_instance_valid(vehicle):
-		return
-	_open_blueprint_dialog(BlueprintDialogMode.SAVE)
-
-
-func _on_load_button_pressed() -> void:
-	if not is_instance_valid(vehicle):
-		return
-	_open_blueprint_dialog(BlueprintDialogMode.LOAD)
-
-
-func _open_blueprint_dialog(mode: BlueprintDialogMode) -> void:
-	var directory_result := VehicleBlueprint.ensure_directory()
-	if not directory_result["ok"]:
-		_show_status(directory_result["error"])
-		return
-	blueprint_dialog_mode = mode
-	blueprint_dialog.access = FileDialog.ACCESS_USERDATA
-	if mode == BlueprintDialogMode.SAVE:
-		blueprint_dialog.file_mode = FileDialog.FILE_MODE_SAVE_FILE
-		blueprint_dialog.title = "Save Vehicle Blueprint"
-		blueprint_dialog.ok_button_text = "Save"
-		blueprint_dialog.current_dir = VehicleBlueprint.DIRECTORY
-		blueprint_dialog.current_file = (
-			vehicle.vehicle_name.validate_filename() + ".json"
-		)
-	else:
-		blueprint_dialog.file_mode = FileDialog.FILE_MODE_OPEN_FILE
-		blueprint_dialog.title = "Load Vehicle Blueprint"
-		blueprint_dialog.ok_button_text = "Load"
-		blueprint_dialog.current_dir = VehicleBlueprint.DIRECTORY
-		blueprint_dialog.current_file = ""
-	blueprint_dialog.popup_centered_ratio(0.7)
-
-
-func _on_blueprint_file_selected(path: String) -> void:
-	var selected_mode := blueprint_dialog_mode
-	blueprint_dialog_mode = BlueprintDialogMode.NONE
-	if selected_mode == BlueprintDialogMode.SAVE:
-		_save_blueprint_to_path(path)
-	elif selected_mode == BlueprintDialogMode.LOAD:
-		_load_blueprint_from_path(path)
-
-
-func _save_blueprint_to_path(path: String) -> void:
+func save_blueprint_to_path(path: String) -> void:
 	if not is_instance_valid(vehicle):
 		_show_status("There is no vehicle to save.")
 		return
@@ -917,7 +828,7 @@ func _save_blueprint_to_path(path: String) -> void:
 		_show_status(result["error"])
 
 
-func _load_blueprint_from_path(path: String) -> void:
+func load_blueprint_from_path(path: String) -> void:
 	var result := VehicleBlueprint.load_path(path)
 	if not result["ok"]:
 		_show_status(result["error"])
@@ -1020,15 +931,9 @@ func _blueprint_records_fit_workshop(
 	return true
 
 
-func _on_blueprint_dialog_canceled() -> void:
-	blueprint_dialog_mode = BlueprintDialogMode.NONE
-
-
-func _on_com_visibility_changed(enabled: bool) -> void:
-	com_icon.visible = (
-		enabled and is_editing_vehicle() and is_instance_valid(vehicle)
-	)
-
-
 func _show_status(message: String) -> void:
 	status_changed.emit(message)
+
+
+func _get_hud() -> Node:
+	return get_tree().get_first_node_in_group("game_hud")

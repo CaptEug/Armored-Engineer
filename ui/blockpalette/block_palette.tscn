@@ -3,7 +3,7 @@
 [ext_resource type="Theme" uid="uid://djb1bkq82a1wy" path="res://assets/resources/UI_theme.tres" id="1_corl5"]
 [ext_resource type="Script" uid="uid://oqgndqn6q2ut" path="res://ui/blockpalette/block_palette.gd" id="1_o6jai"]
 [ext_resource type="PackedScene" uid="uid://b1mvxfwjerdxa" path="res://blocks/mobility/track/metal_track.tscn" id="2_q8o37"]
-[ext_resource type="PackedScene" uid="uid://owwanqi4qnav" path="res://blocks/structural/structual_frame.tscn" id="4_2ommr"]
+[ext_resource type="PackedScene" uid="uid://owwanqi4qnav" path="res://blocks/structural/structural_frame.tscn" id="4_2ommr"]
 [ext_resource type="PackedScene" uid="uid://vbegrifblqog" path="res://blocks/mobility/powerpack/v_2.tscn" id="5_jt0gd"]
 [ext_resource type="PackedScene" uid="uid://db5q6xew8l8yd" path="res://blocks/logistic/liquid_tank.tscn" id="8_tk1tn"]
 [ext_resource type="PackedScene" uid="uid://dmbiltj5ojfl2" path="res://blocks/logistic/cargo_box.tscn" id="9_hpgwb"]
@@ -11,8 +11,8 @@
 [ext_resource type="PackedScene" uid="uid://ctxya1ewcu5qr" path="res://blocks/industrial/drill.tscn" id="11_l8ndj"]
 [ext_resource type="PackedScene" uid="uid://cxis8u1udc8hr" path="res://blocks/weapon/KwK_43.tscn" id="11_ulxes"]
 [ext_resource type="PackedScene" uid="uid://dk8l6ntdbkgbh" path="res://blocks/control/manual_cockpit.tscn" id="12_cockpit"]
+[ext_resource type="PackedScene" uid="uid://cfmnoqjl6olg0" path="res://blocks/structural/turret_mount.tscn" id="13_ayxty"]
 [ext_resource type="PackedScene" uid="uid://yrt7gi14l6ij" path="res://blocks/structural/vehicle_bay.tscn" id="13_workshop"]
-[ext_resource type="PackedScene" path="res://turret/turret_mount.tscn" id="14_turret_mount"]
 
 [node name="BlockPalette" type="Control" unique_id=664557349]
 layout_mode = 3
@@ -24,7 +24,7 @@ metadata/_custom_type_script = "uid://oqgndqn6q2ut"
 [node name="MetalTrack" parent="." unique_id=800238747 instance=ExtResource("2_q8o37")]
 position = Vector2(56, 24)
 
-[node name="StructualFrame" parent="." unique_id=40607816 instance=ExtResource("4_2ommr")]
+[node name="StructuralFrame" parent="." unique_id=40607816 instance=ExtResource("4_2ommr")]
 position = Vector2(24, 24)
 
 [node name="V2" parent="." unique_id=1612667147 instance=ExtResource("5_jt0gd")]
@@ -51,5 +51,5 @@ position = Vector2(123, 119)
 [node name="VehicleBay" parent="." unique_id=2037674463 instance=ExtResource("13_workshop")]
 position = Vector2(224, 32)
 
-[node name="TurretMount3x3" parent="." instance=ExtResource("14_turret_mount")]
-position = Vector2(280, 40)
+[node name="TurretMount3x3" parent="." unique_id=1788194205 instance=ExtResource("13_ayxty")]
+position = Vector2(232, 88)

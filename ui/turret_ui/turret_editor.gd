@@ -2,6 +2,7 @@ class_name TurretEditor
 extends Control
 
 signal status_changed(message: String)
+signal session_changed(active: bool)
 
 enum EditMode { BUILD, DISMANTLE }
 
@@ -21,11 +22,6 @@ var preview_rotation := 0
 var edit_mode := EditMode.BUILD
 var removal_hover: RemovalOverlay
 
-@onready var palette: BlockPalette = $EditorDock/PaletteArea/Panel/Clipper/BlockPalette
-@onready var dismantle_button: TextureButton = $EditorDock/EditorTools/DismantleButton
-@onready var status_label: Label = $EditorDock/Status
-
-
 func _ready() -> void:
 	add_to_group("turret_editor")
 	_set_editor_visible(false)
@@ -43,35 +39,25 @@ func _process(_delta: float) -> void:
 	if active_turret != null and not is_instance_valid(active_turret):
 		finish_turret_edit(false)
 		return
-	selected_block = palette.selected_block
+	var hud := _get_hud()
+	selected_block = hud.get_selected_block() if hud != null else null
 	update_preview()
 
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not is_editing_turret():
 		return
-	if event.is_action_pressed("ui_cancel"):
-		finish_turret_edit()
-		get_viewport().set_input_as_handled()
-		return
-	if event.is_action_pressed("ROTATE"):
-		if selected_block != null and BlockDB.is_rotatable(selected_block.block_id):
-			preview_rotation = wrapi(preview_rotation + 1, 0, 4)
-		else:
-			preview_rotation = 0
-		get_viewport().set_input_as_handled()
-		return
-	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_X:
-		_toggle_edit_mode()
-		get_viewport().set_input_as_handled()
-		return
 	if not event is InputEventMouseButton or not event.pressed:
 		return
 	if event.button_index == MOUSE_BUTTON_RIGHT:
 		if edit_mode == EditMode.BUILD:
-			palette.selected_block = null
+			var hud := _get_hud()
+			if hud != null:
+				hud.clear_palette_selection()
 		else:
-			_set_edit_mode(EditMode.BUILD)
+			var hud := _get_hud()
+			if hud != null:
+				hud.set_dismantle_tool(false)
 		get_viewport().set_input_as_handled()
 		return
 	if event.button_index == MOUSE_BUTTON_LEFT:
@@ -113,12 +99,12 @@ func begin_turret_edit(mount: TurretMount) -> Dictionary:
 	if camera != null:
 		camera.set("target_pos", active_turret.global_position)
 		camera.set("target_rot", active_turret.global_rotation)
-	palette.set_turret_mode(true)
 	_set_edit_mode(EditMode.BUILD)
-	_set_editor_visible(true)
+	_set_editor_visible(false)
 	set_process(true)
 	set_process_unhandled_input(true)
 	_show_status("Editing turret")
+	session_changed.emit(true)
 	return {"ok": true, "message": "Turret editor opened"}
 
 
@@ -130,7 +116,6 @@ func finish_turret_edit(require_valid: bool = true) -> Dictionary:
 		if not bool(validation["ok"]):
 			return _error(str(validation["message"]))
 	clear_preview()
-	palette.set_turret_mode(false)
 	_restore_edit_visuals()
 	if is_instance_valid(base_vehicle):
 		base_vehicle.freeze = previous_vehicle_freeze
@@ -146,6 +131,7 @@ func finish_turret_edit(require_valid: bool = true) -> Dictionary:
 	set_process(false)
 	set_process_unhandled_input(false)
 	_session_manager().finish(self)
+	session_changed.emit(false)
 	return {"ok": true, "message": "Turret editing finished"}
 
 
@@ -316,22 +302,12 @@ func _session_manager() -> EditSessionManager:
 
 
 func _show_status(message: String) -> void:
-	if is_instance_valid(status_label):
-		status_label.text = message
 	status_changed.emit(message)
 
 
 func _error(message: String) -> Dictionary:
 	_show_status(message)
 	return {"ok": false, "message": message}
-
-
-func _on_finish_button_pressed() -> void:
-	finish_turret_edit()
-
-
-func _on_dismantle_button_pressed() -> void:
-	_toggle_edit_mode()
 
 
 func _toggle_edit_mode() -> void:
@@ -344,13 +320,24 @@ func _toggle_edit_mode() -> void:
 
 func _set_edit_mode(new_mode: EditMode) -> void:
 	edit_mode = new_mode
-	if is_instance_valid(dismantle_button):
-		dismantle_button.set_pressed_no_signal(
-			edit_mode == EditMode.DISMANTLE
-		)
 	_show_status(
 		"Dismantle: select a turret block"
 		if edit_mode == EditMode.DISMANTLE
 		else "Select a block to construct"
 	)
 	clear_preview()
+
+
+func set_edit_tool(dismantle: bool) -> void:
+	_set_edit_mode(EditMode.DISMANTLE if dismantle else EditMode.BUILD)
+
+
+func rotate_preview() -> void:
+	if selected_block != null and BlockDB.is_rotatable(selected_block.block_id):
+		preview_rotation = wrapi(preview_rotation + 1, 0, 4)
+	else:
+		preview_rotation = 0
+
+
+func _get_hud() -> Node:
+	return get_tree().get_first_node_in_group("game_hud")

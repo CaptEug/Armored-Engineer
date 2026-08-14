@@ -2,6 +2,7 @@ class_name BuildingConstructor
 extends Control
 
 signal active_changed(enabled: bool)
+signal status_changed(message: String)
 
 enum EditMode {
 	BUILD,
@@ -30,15 +31,6 @@ var preview_block: Block
 var preview_cell := WorldBlockLayer.INVALID_CELL
 var preview_rotation := 0
 var removal_hover: RemovalOverlay
-
-@onready var constructor_dock: Panel = $ConstructorDock
-@onready var palette: BlockPalette = (
-	$ConstructorDock/PaletteArea/Panel/Clipper/BlockPalette
-)
-@onready var demolish_button: TextureButton = (
-	$ConstructorDock/Tools/DemolishButton
-)
-@onready var status_label: Label = $ConstructorDock/Status
 
 var world_blocks: WorldBlockLayer:
 	get:
@@ -80,24 +72,23 @@ func set_active(enabled: bool) -> void:
 			EditSessionManager.MODE_BUILDING
 		)
 		if not bool(result["ok"]):
-			status_label.text = str(result["message"])
+			_show_status(str(result["message"]))
 			return
 	active = enabled
-	visible = active
-	constructor_dock.visible = true
-	if active:
-		move_to_front()
+	visible = false
 	set_process(active)
 	set_process_unhandled_input(active)
 	if active:
-		status_label.text = "Select a block to construct"
+		_show_status("Select a block to construct")
 		set_mode(EditMode.BUILD)
 	else:
-		palette.selected_block = null
+		var hud := _get_hud()
+		if hud != null:
+			hud.clear_palette_selection()
 		selected_block = null
 		clear_preview_block()
 		clear_removal_hover()
-		status_label.text = ""
+		_show_status("")
 		if sessions != null:
 			sessions.finish(self)
 	active_changed.emit(active)
@@ -106,7 +97,8 @@ func set_active(enabled: bool) -> void:
 func _process(_delta: float) -> void:
 	if not active:
 		return
-	selected_block = palette.selected_block
+	var hud := _get_hud()
+	selected_block = hud.get_selected_block() if hud != null else null
 	if edit_mode == EditMode.BUILD:
 		update_preview()
 	else:
@@ -117,38 +109,19 @@ func _process(_delta: float) -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if not active:
 		return
-	if event.is_action_pressed("ui_cancel"):
-		set_active(false)
-		get_viewport().set_input_as_handled()
-		return
-	if event.is_action_pressed("ROTATE"):
-		if (
-			selected_block != null
-			and BlockDB.is_rotatable(selected_block.block_id)
-		):
-			preview_rotation = wrapi(preview_rotation + 1, 0, 4)
-		else:
-			preview_rotation = 0
-		get_viewport().set_input_as_handled()
-		return
-	if (
-		event is InputEventKey
-		and event.pressed
-		and not event.echo
-		and event.keycode == KEY_X
-	):
-		toggle_mode()
-		get_viewport().set_input_as_handled()
-		return
 	if not event is InputEventMouseButton or not event.pressed:
 		return
 	if event.button_index == MOUSE_BUTTON_RIGHT:
 		if edit_mode == EditMode.BUILD:
-			palette.selected_block = null
+			var hud := _get_hud()
+			if hud != null:
+				hud.clear_palette_selection()
 			selected_block = null
 			clear_preview_block()
 		else:
-			set_mode(EditMode.BUILD)
+			var hud := _get_hud()
+			if hud != null:
+				hud.set_dismantle_tool(false)
 		get_viewport().set_input_as_handled()
 		return
 	if event.button_index != MOUSE_BUTTON_LEFT:
@@ -167,16 +140,24 @@ func toggle_mode() -> void:
 
 func set_mode(new_mode: EditMode) -> void:
 	edit_mode = new_mode
-	demolish_button.set_pressed_no_signal(
-		edit_mode == EditMode.DEMOLISH
-	)
 	clear_preview_block()
 	clear_removal_hover()
 	preview_rotation = 0
 	if active and edit_mode == EditMode.DEMOLISH:
-		status_label.text = "Dismantle: select a friendly building block"
+		_show_status("Dismantle: select a friendly building block")
 	else:
-		status_label.text = "Select a block to construct"
+		_show_status("Select a block to construct")
+
+
+func set_edit_tool(dismantle: bool) -> void:
+	set_mode(EditMode.DEMOLISH if dismantle else EditMode.BUILD)
+
+
+func rotate_preview() -> void:
+	if selected_block != null and BlockDB.is_rotatable(selected_block.block_id):
+		preview_rotation = wrapi(preview_rotation + 1, 0, 4)
+	else:
+		preview_rotation = 0
 
 
 func update_preview() -> void:
@@ -249,7 +230,7 @@ func place_selected_block() -> void:
 		preview_cell,
 		preview_rotation
 	)
-	status_label.text = str(result.get("message", ""))
+	_show_status(str(result.get("message", "")))
 
 
 func construct_block_at(
@@ -309,7 +290,7 @@ func remove_block_at_mouse() -> void:
 	if world_blocks == null:
 		return
 	var result := dismantle_block_at(_get_mouse_world_cell())
-	status_label.text = str(result.get("message", ""))
+	_show_status(str(result.get("message", "")))
 
 
 func update_world_removal_hover() -> void:
@@ -546,9 +527,9 @@ func _refresh_minimap_for_block(
 		)
 
 
-func _on_dismantle_button_pressed() -> void:
-	toggle_mode()
+func _show_status(message: String) -> void:
+	status_changed.emit(message)
 
 
-func _on_finish_button_pressed() -> void:
-	set_active(false)
+func _get_hud() -> Node:
+	return get_tree().get_first_node_in_group("game_hud")

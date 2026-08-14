@@ -1,0 +1,21 @@
+[gd_scene format=3 uid="uid://cfmnoqjl6olg0"]
+
+[ext_resource type="Script" uid="uid://cjkrwgdk0qws1" path="res://blocks/structural/turret_mount.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://d1boi4b4eg236" path="res://assets/blocks/ussr1.png" id="2_m5tso"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape_mount"]
+size = Vector2(48, 48)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ymebo"]
+atlas = ExtResource("2_m5tso")
+region = Rect2(96, 64, 48, 48)
+
+[node name="TurretMount3x3" type="Node2D" unique_id=1788194205]
+script = ExtResource("1_script")
+size = Vector2i(3, 3)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=510273014]
+shape = SubResource("RectangleShape_mount")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1104855944]
+texture = SubResource("AtlasTexture_ymebo")

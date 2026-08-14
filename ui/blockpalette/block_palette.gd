@@ -1,6 +1,12 @@
 class_name BlockPalette
 extends Control
 
+enum Context {
+	VEHICLE,
+	BUILDING,
+	TURRET,
+}
+
 @export_enum("vehicle", "world") var host_name := BlockDB.HOST_VEHICLE
 @export var constructed_only := true
 
@@ -10,6 +16,7 @@ var zoom:int = 2
 var max_zoom:int = 4
 var min_zoom:int = 1
 var turret_mode := false
+var context := Context.VEHICLE
 
 
 func _ready():
@@ -46,12 +53,22 @@ func create_button(block : Block):
 
 
 func set_turret_mode(enabled: bool) -> void:
-	turret_mode = enabled
+	set_context(Context.TURRET if enabled else Context.VEHICLE)
+
+
+func set_context(new_context: Context) -> void:
+	context = new_context
+	turret_mode = context == Context.TURRET
+	host_name = (
+		BlockDB.HOST_WORLD
+		if context == Context.BUILDING
+		else BlockDB.HOST_VEHICLE
+	)
 	selected_block = null
 	for block: Block in blocks:
 		block.visible = (
 			_is_turret_block_allowed(block)
-			if enabled
+			if turret_mode
 			else _is_available(block)
 		)
 	for child: Node in get_children():
@@ -59,9 +76,13 @@ func set_turret_mode(enabled: bool) -> void:
 		if button != null:
 			button.visible = (
 				_is_turret_block_allowed(button.block)
-				if enabled
+				if turret_mode
 				else _is_available(button.block)
 			)
+
+
+func clear_selection() -> void:
+	selected_block = null
 
 
 func _is_turret_block_allowed(block: Block) -> bool:
