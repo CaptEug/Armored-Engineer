@@ -48,7 +48,7 @@ var world_blocks: WorldBlockLayer:
 func _ready() -> void:
 	add_to_group("building_constructor")
 	ensure_removal_hover()
-	constructor_dock.hide()
+	hide()
 	set_process(false)
 	set_process_unhandled_input(false)
 
@@ -71,8 +71,22 @@ func set_active(enabled: bool) -> void:
 		return
 	if enabled and world_blocks == null:
 		return
+	var sessions := get_tree().get_first_node_in_group(
+		"edit_session_manager"
+	) as EditSessionManager
+	if enabled and sessions != null:
+		var result := sessions.try_begin(
+			self,
+			EditSessionManager.MODE_BUILDING
+		)
+		if not bool(result["ok"]):
+			status_label.text = str(result["message"])
+			return
 	active = enabled
-	constructor_dock.visible = active
+	visible = active
+	constructor_dock.visible = true
+	if active:
+		move_to_front()
 	set_process(active)
 	set_process_unhandled_input(active)
 	if active:
@@ -84,6 +98,8 @@ func set_active(enabled: bool) -> void:
 		clear_preview_block()
 		clear_removal_hover()
 		status_label.text = ""
+		if sessions != null:
+			sessions.finish(self)
 	active_changed.emit(active)
 
 

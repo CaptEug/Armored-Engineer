@@ -3,6 +3,7 @@ extends Panel
 @export var UI_root : CanvasLayer
 @export var gamescene : GameScene
 @export var vehicle_editor : VehicleEditor
+@export var turret_editor: TurretEditor
 @export var vehicle_panel: VehiclePanel
 @export var building_constructor: BuildingConstructor
 @export var settings_panel : FloatingPanel
@@ -12,28 +13,22 @@ extends Panel
 @onready var build_button: TextureButton = $BuildButton
 
 func _ready() -> void:
+	add_to_group("game_hud")
 	if building_constructor != null:
 		building_constructor.active_changed.connect(
 			_on_building_constructor_active_changed
 		)
 
 
-func _unhandled_input(event: InputEvent) -> void:
-	if (
-		not event.is_action_pressed("TOGGLE_EDITOR")
-		or (event is InputEventKey and event.echo)
-	):
-		return
-	if building_constructor != null and building_constructor.is_active():
-		building_constructor.set_active(false)
-	elif (
-		vehicle_editor != null
-		and vehicle_editor.try_toggle_workshop_context()
-	):
-		pass
-	elif building_constructor != null:
-		building_constructor.set_active(true)
-	get_viewport().set_input_as_handled()
+func open_turret_editor(mount: TurretMount) -> Dictionary:
+	if turret_editor == null:
+		return {"ok": false, "message": "Turret editor is unavailable"}
+	var result := turret_editor.begin_turret_edit(mount)
+	if bool(result.get("ok", false)):
+		turret_editor.visible = true
+		turret_editor.move_to_front()
+	return result
+
 
 func _process(_delta):
 	if gamescene:
@@ -52,12 +47,20 @@ func _on_build_button_toggled(enabled: bool) -> void:
 	if building_constructor == null:
 		build_button.set_pressed_no_signal(false)
 		return
-	if enabled and vehicle_editor != null:
-		vehicle_editor.close_editor()
-	if enabled and vehicle_panel != null:
-		vehicle_panel.close_panel()
 	building_constructor.set_active(enabled)
 	build_button.set_pressed_no_signal(building_constructor.is_active())
+	if enabled and not building_constructor.is_active():
+		var sessions := get_tree().get_first_node_in_group(
+			"edit_session_manager"
+		) as EditSessionManager
+		if sessions != null:
+			build_button.tooltip_text = sessions.get_conflict_message(
+				EditSessionManager.MODE_BUILDING
+			)
+	else:
+		build_button.tooltip_text = "Building editor"
+	if building_constructor.is_active() and vehicle_panel != null:
+		vehicle_panel.close_panel()
 
 
 func _on_building_constructor_active_changed(enabled: bool) -> void:

@@ -2,6 +2,7 @@ class_name Vehicle
 extends RigidBody2D
 
 signal vehicle_split(fragments: Array)
+signal docking_changed(vehicle_bay: VehicleBayBlock)
 
 const TILE_SIZE := Globals.TILE_SIZE
 
@@ -27,6 +28,17 @@ var _owner_id: StringName = &"player"
 		if block_assembly != null:
 			block_assembly.owner_id = value
 var blueprint_blocks: Array = []
+var _docked_vehicle_bay: VehicleBayBlock
+var docked_vehicle_bay: VehicleBayBlock:
+	get:
+		return (
+			_docked_vehicle_bay
+			if is_instance_valid(_docked_vehicle_bay)
+			else null
+		)
+var docked: bool:
+	get:
+		return is_docked()
 var blueprint_ghosts_root: Node2D
 var total_mass := 0.0
 var tracks: Array[Track] = []
@@ -63,6 +75,29 @@ func _ready() -> void:
 
 func _process(_delta):
 	pass
+
+
+func is_docked() -> bool:
+	return is_instance_valid(_docked_vehicle_bay)
+
+
+func get_docked_vehicle_bay() -> VehicleBayBlock:
+	return docked_vehicle_bay
+
+
+func set_docked_vehicle_bay(vehicle_bay: VehicleBayBlock) -> void:
+	var next_bay := vehicle_bay if is_instance_valid(vehicle_bay) else null
+	if _docked_vehicle_bay == next_bay:
+		return
+	_docked_vehicle_bay = next_bay
+	docking_changed.emit(docked_vehicle_bay)
+
+
+func clear_docked_vehicle_bay(vehicle_bay: VehicleBayBlock) -> void:
+	if _docked_vehicle_bay != vehicle_bay:
+		return
+	_docked_vehicle_bay = null
+	docking_changed.emit(null)
 
 
 func _input_event(viewport: Node, event: InputEvent, _shape_idx: int) -> void:

@@ -117,9 +117,18 @@ func _on_turret_edit_pressed() -> void:
 	if not is_instance_valid(target_block) or not target_block.block_host is Turret:
 		return
 	var turret := target_block.block_host as Turret
-	var editor := get_tree().get_first_node_in_group("vehicle_editor") as VehicleEditor
-	if editor != null:
-		editor.begin_turret_edit(turret.mount)
+	var hud := get_tree().get_first_node_in_group("game_hud")
+	if hud != null and hud.has_method("open_turret_editor"):
+		var result: Dictionary = hud.call(
+			"open_turret_editor",
+			turret.mount
+		)
+		if bool(result.get("ok", false)):
+			var ancestor := get_parent()
+			while ancestor != null and not ancestor is BlockPanel:
+				ancestor = ancestor.get_parent()
+			if ancestor is BlockPanel:
+				(ancestor as BlockPanel).call_deferred("close_panel")
 
 
 func _on_health_changed() -> void:

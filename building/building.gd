@@ -82,10 +82,8 @@ func get_docked_vehicles() -> Array[Vehicle]:
 func get_vehicle_bay_for_vehicle(target: Vehicle) -> VehicleBayBlock:
 	if not is_instance_valid(target):
 		return null
-	for vehicle_bay: VehicleBayBlock in vehicle_bays:
-		if vehicle_bay.get_docked_vehicle() == target:
-			return vehicle_bay
-	return null
+	var vehicle_bay := target.get_docked_vehicle_bay()
+	return vehicle_bay if vehicle_bays.has(vehicle_bay) else null
 
 
 func get_vehicle_bay_for_block(

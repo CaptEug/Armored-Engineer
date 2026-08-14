@@ -63,6 +63,7 @@ atlas = ExtResource("7_symbols")
 region = Rect2(192, 32, 16, 16)
 
 [node name="VehicleEditor" type="Control" unique_id=95526822]
+visible = false
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0

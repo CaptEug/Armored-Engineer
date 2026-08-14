@@ -46,9 +46,19 @@ func _refresh_details() -> void:
 
 
 func _on_edit_button_pressed() -> void:
-	var editor := get_tree().get_first_node_in_group("vehicle_editor") as VehicleEditor
-	if editor == null:
+	var hud := get_tree().get_first_node_in_group("game_hud")
+	if hud == null or not hud.has_method("open_turret_editor"):
 		status_label.text = "Turret editor is unavailable"
 		return
-	var result := editor.begin_turret_edit(mount)
+	var result: Dictionary = hud.call("open_turret_editor", mount)
 	status_label.text = str(result.get("message", ""))
+	if bool(result.get("ok", false)):
+		_close_block_panel_deferred()
+
+
+func _close_block_panel_deferred() -> void:
+	var ancestor := get_parent()
+	while ancestor != null and not ancestor is BlockPanel:
+		ancestor = ancestor.get_parent()
+	if ancestor is BlockPanel:
+		(ancestor as BlockPanel).call_deferred("close_panel")

@@ -24,6 +24,11 @@ func get_fire_command() -> bool:
 	var editor := _get_vehicle_editor()
 	if editor != null and editor.is_fire_suppressed():
 		return false
+	var turret_editor := get_tree().get_first_node_in_group(
+		"turret_editor"
+	) as TurretEditor
+	if turret_editor != null and turret_editor.is_editing_turret():
+		return false
 	return Input.is_action_pressed("FIRE_MAIN")
 
 func _can_accept_player_control() -> bool:
@@ -37,6 +42,11 @@ func _can_accept_player_control() -> bool:
 		return false
 	var editor := _get_vehicle_editor()
 	if editor != null and editor.is_editing_vehicle():
+		return false
+	var turret_editor := get_tree().get_first_node_in_group(
+		"turret_editor"
+	) as TurretEditor
+	if turret_editor != null and turret_editor.is_editing_turret():
 		return false
 	if current_assembly.host is Vehicle:
 		var vehicle_panel := get_tree().get_first_node_in_group(

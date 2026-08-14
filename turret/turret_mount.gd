@@ -116,5 +116,5 @@ func notify_turret_changed() -> void:
 func _editor_is_active() -> bool:
 	if not is_inside_tree():
 		return false
-	var editor := get_tree().get_first_node_in_group("vehicle_editor") as VehicleEditor
+	var editor := get_tree().get_first_node_in_group("turret_editor") as TurretEditor
 	return editor != null and editor.is_editing_turret(turret)

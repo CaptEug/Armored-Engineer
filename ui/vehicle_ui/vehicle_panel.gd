@@ -92,22 +92,7 @@ func _find_docked_vehicle_bay(
 ) -> VehicleBayBlock:
 	if not is_instance_valid(target_vehicle):
 		return null
-	if (
-		is_instance_valid(docked_vehicle_bay)
-		and docked_vehicle_bay.get_docked_vehicle() == target_vehicle
-	):
-		return docked_vehicle_bay
-	for node: Node in get_tree().get_nodes_in_group("world_block_layers"):
-		var world_layer := node as WorldBlockLayer
-		if world_layer == null:
-			continue
-		for building: Building in world_layer.buildings:
-			var vehicle_bay := building.get_vehicle_bay_for_vehicle(
-				target_vehicle
-			)
-			if vehicle_bay != null:
-				return vehicle_bay
-	return null
+	return target_vehicle.get_docked_vehicle_bay()
 
 
 func _start_rename() -> void:

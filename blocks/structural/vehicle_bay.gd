@@ -49,6 +49,11 @@ func _ready() -> void:
 	_refresh_docked_vehicle()
 
 
+func _exit_tree() -> void:
+	if is_instance_valid(_docked_vehicle):
+		_docked_vehicle.clear_docked_vehicle_bay(self)
+
+
 func _physics_process(_delta: float) -> void:
 	_refresh_docked_vehicle()
 
@@ -335,8 +340,14 @@ func _refresh_docked_vehicle() -> void:
 		):
 			current = target
 	if current == previous:
+		if is_instance_valid(current):
+			current.set_docked_vehicle_bay(self)
 		return
+	if is_instance_valid(previous):
+		previous.clear_docked_vehicle_bay(self)
 	_docked_vehicle = current
+	if is_instance_valid(current):
+		current.set_docked_vehicle_bay(self)
 	docked_vehicle_changed.emit(_docked_vehicle)
 
 
