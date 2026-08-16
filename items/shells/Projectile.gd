@@ -9,19 +9,23 @@ enum ShellType {
 
 @export var shell_type: ShellType = ShellType.AP
 @export var weight: float = 1.0
-@export var max_K_DMG: float = 0.0
+@export var max_K_DMG: float = 100.0
+@export_range(1.0, 4000.0, 1.0) var full_kinetic_damage_speed := 200.0
 @export var max_E_DMG: float = 100.0
 @export var explosion_radius: int = 3
-@export var max_range: int = 100 # tiles
 @export var ricochet_angle: float = 70.0 # degrees away from surface normal
 @export_range(0.0, 1.0, 0.01) var ricochet_loss: float = 0.5
+
+@export_category("Projectile Effects")
+@export var effects_enabled := true
+@export var smoke_trail: BallisticSmokeTrail
 
 var source_vehicle: Vehicle
 var source_turret: Turret
 var source_assembly: BlockAssembly
 var source_weapon: Weapon
+var launch_speed := 0.0
 var spawn_position := Vector2.ZERO
-var distance_travelled := 0.0
 var remaining_K_DMG := 0.0
 
 var last_pos := Vector2.ZERO
@@ -38,29 +42,28 @@ func _ready() -> void:
 	last_pos = global_position
 	if spawn_position == Vector2.ZERO:
 		spawn_position = global_position
-	remaining_K_DMG = maxf(max_K_DMG, 0.0)
+	remaining_K_DMG = _get_kinetic_damage_ceiling(launch_speed)
 	var shell_body := get_node_or_null("Area2D") as Area2D
 	if shell_body != null:
 		shell_body.collision_layer = 0
 		shell_body.collision_mask = 0
 		shell_body.monitoring = false
 		shell_body.monitorable = false
+	if effects_enabled:
+		_prepare_projectile_effects()
 
 func _physics_process(_delta: float) -> void:
+	if is_instance_valid(smoke_trail):
+		smoke_trail.sample_position(global_position)
+	_decay_kinetic_damage_from_speed()
 	var from := last_pos
 	var to := global_position
 	var step_distance := from.distance_to(to)
 	if step_distance <= 0.001:
 		return
 
-	distance_travelled += step_distance
 	if not source_cleared:
 		source_cleared = spawn_position.distance_to(to) >= Globals.TILE_SIZE * 2.0
-
-	var max_distance := maxf(float(max_range), 1.0) * Globals.TILE_SIZE
-	if distance_travelled > max_distance:
-		queue_free()
-		return
 
 	if is_instance_valid(traversing_vehicle):
 		if _trace_vehicle_cells(traversing_vehicle, from, to, Vector2.ZERO):
@@ -164,10 +167,7 @@ func _handle_turret_impact(
 		remaining_K_DMG,
 		&"KINETIC"
 	)
-	remaining_K_DMG = maxf(
-		remaining_K_DMG - float(result["damage_consumed"]),
-		0.0
-	)
+	_consume_kinetic_damage(result)
 	if bool(result["destroyed"]) and remaining_K_DMG > 0.001:
 		last_pos = global_position
 		return
@@ -217,11 +217,7 @@ func _trace_vehicle_cells(
 			remaining_K_DMG,
 			&"KINETIC"
 		)
-		remaining_K_DMG = maxf(
-			remaining_K_DMG
-				- float(result["damage_consumed"]),
-			0.0
-		)
+		_consume_kinetic_damage(result)
 
 		if remaining_K_DMG <= 0.001:
 			global_position = sample_position
@@ -241,7 +237,7 @@ func _should_ricochet(direction: Vector2, normal: Vector2) -> bool:
 
 func ricochet(normal: Vector2, hit_position: Vector2) -> void:
 	linear_velocity = linear_velocity.bounce(normal) * ricochet_loss
-	remaining_K_DMG *= ricochet_loss
+	remaining_K_DMG *= ricochet_loss * ricochet_loss
 	global_position = hit_position + normal * 1.0
 	rotation = linear_velocity.angle() + PI * 0.5
 	last_pos = global_position
@@ -297,10 +293,7 @@ func _handle_world_block_impact(
 		_handle_world_impact(hit_position, hit_normal)
 		return
 
-	remaining_K_DMG = maxf(
-		remaining_K_DMG - float(result["damage_consumed"]),
-		0.0
-	)
+	_consume_kinetic_damage(result)
 	if result["destroyed"] and remaining_K_DMG > 0.001:
 		last_pos = global_position
 		return
@@ -322,6 +315,32 @@ func _handle_world_impact(hit_position: Vector2, hit_normal: Vector2) -> void:
 		explode()
 	queue_free()
 
+
+func _consume_kinetic_damage(result: Dictionary) -> void:
+	var damage_before := remaining_K_DMG
+	remaining_K_DMG = maxf(
+		remaining_K_DMG - float(result.get("damage_consumed", 0.0)),
+		0.0
+	)
+	if damage_before <= 0.0 or remaining_K_DMG <= 0.0:
+		linear_velocity = Vector2.ZERO
+		return
+	linear_velocity *= sqrt(remaining_K_DMG / damage_before)
+
+
+func _decay_kinetic_damage_from_speed() -> void:
+	remaining_K_DMG = minf(
+		remaining_K_DMG,
+		_get_kinetic_damage_ceiling(linear_velocity.length())
+	)
+
+
+func _get_kinetic_damage_ceiling(speed: float) -> float:
+	if max_K_DMG <= 0.0 or full_kinetic_damage_speed <= 0.0:
+		return 0.0
+	var speed_ratio := clampf(speed / full_kinetic_damage_speed, 0.0, 1.0)
+	return max_K_DMG * speed_ratio * speed_ratio
+
 func explode() -> void:
 	var explosion := explosion_scene.instantiate() as Explosion
 	if explosion == null:
@@ -330,3 +349,19 @@ func explode() -> void:
 	explosion.radius = explosion_radius
 	explosion.max_damage = max_E_DMG
 	get_tree().current_scene.add_child(explosion)
+
+
+func _prepare_projectile_effects() -> void:
+	if not is_instance_valid(smoke_trail):
+		return
+	smoke_trail.reparent(get_parent(), true)
+	smoke_trail.begin(spawn_position)
+	tree_exiting.connect(_release_smoke_trail)
+
+
+func _release_smoke_trail() -> void:
+	if not is_instance_valid(smoke_trail):
+		return
+	var released_trail := smoke_trail
+	smoke_trail = null
+	released_trail.stop()

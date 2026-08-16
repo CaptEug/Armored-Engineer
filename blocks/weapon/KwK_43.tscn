@@ -57,11 +57,10 @@ _data = {
 
 [node name="KwK43" type="Node2D" unique_id=460751282 node_paths=PackedStringArray("muzzles", "animplayer")]
 script = ExtResource("1_rgnjj")
-mount_type = 0
 reload = 5.0
 shells = Array[String](["PZGR88mm"])
+muzzle_energy = 800.0
 muzzles = [NodePath("Barrel/Marker2D")]
-muzzle_energy = 10000.0
 animplayer = NodePath("AnimationPlayer")
 size = Vector2i(1, 8)
 edge_sockets = Dictionary[Vector2i, Dictionary]({

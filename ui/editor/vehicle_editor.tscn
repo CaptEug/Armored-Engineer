@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://dwajf8k5snhav"]
+
+[ext_resource type="Script" uid="uid://n3fvr1twwrri" path="res://ui/editor/vehicle_editor.gd" id="1_script"]
+[ext_resource type="Resource" uid="uid://vmvc8k2c6pkh" path="res://ui/editor/profile/vehicle_editor_profile.tres" id="2_profile"]
+
+[node name="VehicleEditor" type="Node" unique_id=1438679049]
+script = ExtResource("1_script")
+ui_profile = ExtResource("2_profile")

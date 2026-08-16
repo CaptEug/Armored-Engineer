@@ -99,7 +99,9 @@ func notify_turret_changed() -> void:
 	if current_assembly != null:
 		var host := current_assembly.host
 		if host is Vehicle:
-			(host as Vehicle).update_vehicle()
+			var vehicle := host as Vehicle
+			vehicle.refresh_mass_contribution(self)
+			vehicle.update_vehicle(false, false, true)
 		elif host is Building:
 			var building := host as Building
 			building.refresh_functional_state()

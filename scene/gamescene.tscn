@@ -6,13 +6,13 @@
 [ext_resource type="PackedScene" uid="uid://bfe7bj5f8ea2p" path="res://map/gamemap.tscn" id="5_7cfj2"]
 [ext_resource type="Script" uid="uid://bch4fughs7pje" path="res://scene/camera.gd" id="6_xkbh3"]
 [ext_resource type="PackedScene" uid="uid://o3aj0yiew54" path="res://ui/world_ui/settingspanel.tscn" id="7_7cfj2"]
-[ext_resource type="PackedScene" uid="uid://dwajf8k5snhav" path="res://ui/vehicle_ui/vehicle_editor.tscn" id="8_5ntrk"]
+[ext_resource type="PackedScene" uid="uid://dwajf8k5snhav" path="res://ui/editor/vehicle_editor.tscn" id="8_5ntrk"]
 [ext_resource type="PackedScene" uid="uid://uo65hy70wnnd" path="res://ui/block_info/block_panel.tscn" id="9_block_info"]
-[ext_resource type="PackedScene" uid="uid://cuybb36g8non8" path="res://ui/building_ui/building_constructor.tscn" id="10_building_constructor"]
-[ext_resource type="PackedScene" uid="uid://groik7v5jh3g" path="res://ui/building_ui/building_panel.tscn" id="11_building_panel"]
-[ext_resource type="PackedScene" uid="uid://b66evl72jh85e" path="res://ui/vehicle_ui/vehicle_panel.tscn" id="12_vehicle_panel"]
-[ext_resource type="PackedScene" uid="uid://uaipmufrmhav" path="res://ui/turret_ui/turret_editor.tscn" id="13_turret_editor"]
-[ext_resource type="Script" uid="uid://dpmwmhb0yfxyk" path="res://ui/edit_session_manager.gd" id="14_edit_sessions"]
+[ext_resource type="PackedScene" uid="uid://cuybb36g8non8" path="res://ui/editor/building_constructor.tscn" id="10_building_constructor"]
+[ext_resource type="PackedScene" uid="uid://groik7v5jh3g" path="res://ui/assembly_info/building_panel.tscn" id="11_building_panel"]
+[ext_resource type="PackedScene" uid="uid://b66evl72jh85e" path="res://ui/assembly_info/vehicle_panel.tscn" id="12_vehicle_panel"]
+[ext_resource type="PackedScene" uid="uid://uaipmufrmhav" path="res://ui/editor/turret_editor.tscn" id="13_turret_editor"]
+[ext_resource type="Script" uid="uid://dpmwmhb0yfxyk" path="res://ui/editor/edit_session_manager.gd" id="14_edit_sessions"]
 
 [node name="Gamescene" type="Node2D" unique_id=1552924313]
 script = ExtResource("1_xkbh3")
@@ -22,7 +22,7 @@ minimap = NodePath("../UI/Minimap")
 
 [node name="UI" type="CanvasLayer" parent="." unique_id=706726229]
 
-[node name="EditSessionManager" type="Node" parent="UI" unique_id=1705176839]
+[node name="EditorManager" type="Node" parent="UI" unique_id=1705176839]
 script = ExtResource("14_edit_sessions")
 
 [node name="Hud" parent="UI" unique_id=494295281 node_paths=PackedStringArray("UI_root", "gamescene", "vehicle_editor", "turret_editor", "vehicle_panel", "building_constructor", "settings_panel", "minimap") instance=ExtResource("2_fwly5")]
@@ -36,11 +36,9 @@ settings_panel = NodePath("../Settingspanel")
 minimap = NodePath("../Minimap")
 
 [node name="BuildingConstructor" parent="UI" unique_id=1705208497 node_paths=PackedStringArray("gamemap") instance=ExtResource("10_building_constructor")]
-visible = false
 gamemap = NodePath("../../Gamemap")
 
 [node name="VehicleEditor" parent="UI" unique_id=554690041 node_paths=PackedStringArray("gamemap") instance=ExtResource("8_5ntrk")]
-visible = false
 gamemap = NodePath("../../Gamemap")
 
 [node name="TurretEditor" parent="UI" unique_id=370542834 instance=ExtResource("13_turret_editor")]

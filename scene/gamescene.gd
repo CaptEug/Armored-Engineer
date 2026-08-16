@@ -1,8 +1,8 @@
 class_name GameScene
 extends Node2D
 
-const BUILDING_SAVE := preload("res://building/building_save.gd")
-const VEHICLE_SAVE := preload("res://vehicle/vehicle_save.gd")
+const BUILDING_SAVE := preload("res://assembly/building/building_save.gd")
+const VEHICLE_SAVE := preload("res://assembly/vehicle/vehicle_save.gd")
 
 @onready var gamemap:GameMap = $Gamemap
 @onready var gameUI:CanvasLayer = $UI

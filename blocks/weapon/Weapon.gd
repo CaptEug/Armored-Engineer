@@ -14,13 +14,14 @@ enum WeaponState {
 
 signal weapon_status_changed
 
+const MUZZLE_ENERGY_UNIT := 1000.0
+
 @export_category("Weapon")
 @export var mount_type: MountType = MountType.FIXED_GUN
-@export var shoot_range: float = 0.0 # tiles; 0 keeps the projectile's own range
 @export var reload: float = 1.0
 @export var spread: float = 0.0 # radians
 @export var shells: Array[String] = []
-@export var muzzle_energy: float = 10000.0
+@export var muzzle_energy := 100.0
 
 @export_category("Firing")
 @export var muzzles: Array[Marker2D] = []
@@ -287,15 +288,17 @@ func _spawn_projectile(muzzle: Marker2D, shell_scene: PackedScene) -> bool:
 	)
 	shell.source_weapon = self
 	shell.source_turret = block_host as Turret if block_host is Turret else null
+	var shell_mass := maxf(shell.weight, 0.001)
+	var internal_muzzle_energy := muzzle_energy * MUZZLE_ENERGY_UNIT
+	var velocity := sqrt(
+		maxf(2.0 * internal_muzzle_energy / shell_mass, 0.0)
+	)
+	shell.launch_speed = velocity
 	shell.global_position = muzzle.global_position
 	shell.spawn_position = muzzle.global_position
 	shell.rotation = direction.angle() + PI * 0.5
-	if shoot_range > 0.0:
-		shell.max_range = maxi(1, roundi(shoot_range))
 	get_tree().current_scene.add_child(shell)
 
-	var shell_mass := maxf(shell.weight, 0.001)
-	var velocity := sqrt(maxf(2.0 * muzzle_energy / shell_mass, 0.0))
 	var impulse := direction * shell_mass * velocity
 	shell.apply_impulse(impulse)
 

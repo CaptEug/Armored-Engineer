@@ -187,7 +187,7 @@ func save_chunk(
 	chunk_y: int,
 	world_origin: Vector2i = Vector2i.ZERO
 ) -> PackedByteArray:
-	const CHUNK_SIZE := 32
+	const CHUNK_SIZE := GameMap.MAP_CHUNK_SIZE
 	var bytes := PackedByteArray()
 	for ly in range(CHUNK_SIZE):
 		for lx in range(CHUNK_SIZE):

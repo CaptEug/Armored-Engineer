@@ -25,21 +25,22 @@ enum BlueprintDialogMode {
 var mode := Mode.NORMAL
 var blueprint_dialog_mode := BlueprintDialogMode.NONE
 
-@onready var normal_bar: Panel = $NormalBar
-@onready var clock: Label = $NormalBar/Clock
-@onready var build_button: TextureButton = $NormalBar/BuildButton
-@onready var settings_button: TextureButton = $NormalBar/SettingsButton
-@onready var map_button: TextureButton = $NormalBar/MapButton
-@onready var editor_toolbar: HBoxContainer = $NormalBar/EditorToolbar
+@onready var tool_bar: Panel = $Toolbar
+@onready var clock: Label = $Toolbar/Clock
+@onready var build_button: TextureButton = $Toolbar/BuildButton
+@onready var settings_button: TextureButton = $Toolbar/SettingsButton
+@onready var map_button: TextureButton = $Toolbar/MapButton
+@onready var editor_toolbar: HBoxContainer = $Toolbar/EditorToolbar
 @onready var editor_dock: Panel = $EditorDock
-@onready var mode_title: Label = $NormalBar/EditorToolbar/ModeTitle
-@onready var status_label: Label = $NormalBar/EditorToolbar/Status
+@onready var palette_panel: Panel = $EditorDock/PaletteArea/Panel
+@onready var palette_inner_panel: Panel = $EditorDock/PaletteArea/Panel/Clipper
+@onready var status_label: Label = $Toolbar/EditorToolbar/Status
 @onready var palette: BlockPalette = $EditorDock/PaletteArea/Panel/Clipper/BlockPalette
-@onready var save_button: TextureButton = $NormalBar/EditorToolbar/SaveButton
-@onready var load_button: TextureButton = $NormalBar/EditorToolbar/LoadButton
-@onready var dismantle_button: TextureButton = $NormalBar/EditorToolbar/DismantleButton
-@onready var auto_construct_button: TextureButton = $NormalBar/EditorToolbar/AutoConstructButton
-@onready var com_button: CheckButton = $NormalBar/EditorToolbar/CoMButton
+@onready var save_button: TextureButton = $Toolbar/EditorToolbar/SaveButton
+@onready var load_button: TextureButton = $Toolbar/EditorToolbar/LoadButton
+@onready var dismantle_button: TextureButton = $Toolbar/EditorToolbar/DismantleButton
+@onready var auto_construct_button: TextureButton = $Toolbar/EditorToolbar/AutoConstructButton
+@onready var com_button: CheckButton = $Toolbar/EditorToolbar/CoMButton
 @onready var blueprint_dialog: FileDialog = $BlueprintDialog
 @onready var com_icon: Sprite2D = $COMicon
 
@@ -97,7 +98,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func set_mode(new_mode: Mode) -> void:
 	mode = new_mode
-	normal_bar.visible = true
+	tool_bar.visible = true
 	settings_button.visible = mode == Mode.NORMAL
 	build_button.visible = mode == Mode.NORMAL
 	map_button.visible = mode == Mode.NORMAL
@@ -112,20 +113,16 @@ func set_mode(new_mode: Mode) -> void:
 	com_icon.hide()
 	status_label.text = ""
 	match mode:
-		Mode.NORMAL:
-			mode_title.text = ""
 		Mode.VEHICLE_EDIT:
-			mode_title.text = "VEH"
 			palette.set_context(BlockPalette.Context.VEHICLE)
 			status_label.text = "Select a block to construct"
 		Mode.BUILDING_EDIT:
-			mode_title.text = "BLD"
 			palette.set_context(BlockPalette.Context.BUILDING)
 			status_label.text = "Select a block to construct"
 		Mode.TURRET_EDIT:
-			mode_title.text = "TUR"
 			palette.set_context(BlockPalette.Context.TURRET)
 			status_label.text = "Select a block to construct"
+	_apply_editor_ui_profile()
 	_apply_capabilities()
 
 
@@ -138,6 +135,33 @@ func get_active_editor() -> Node:
 		Mode.TURRET_EDIT:
 			return turret_editor
 	return null
+
+
+func _get_active_ui_profile() -> EditorUIProfile:
+	var editor := get_active_editor() as EditorController
+	return editor.get_ui_profile() if editor != null else null
+
+
+func _apply_editor_ui_profile() -> void:
+	var profile := _get_active_ui_profile()
+	_apply_panel_style(tool_bar, profile.toolbar_style if profile != null else null)
+	_apply_panel_style(
+		palette_panel,
+		profile.palette_style if profile != null else null
+	)
+	_apply_panel_style(
+		palette_inner_panel,
+		profile.palette_inner_style if profile != null else null
+	)
+	if profile != null:
+		palette.set_context(profile.palette_context)
+
+
+func _apply_panel_style(panel: Panel, style: StyleBox) -> void:
+	if style == null:
+		panel.remove_theme_stylebox_override("panel")
+	else:
+		panel.add_theme_stylebox_override("panel", style)
 
 
 func get_selected_block() -> Block:
@@ -171,12 +195,14 @@ func get_clock_string(time: float) -> String:
 
 
 func _apply_capabilities() -> void:
-	var vehicle_mode := mode == Mode.VEHICLE_EDIT
-	save_button.visible = vehicle_mode
-	load_button.visible = vehicle_mode
-	auto_construct_button.visible = vehicle_mode
-	com_button.visible = vehicle_mode
-	dismantle_button.visible = mode != Mode.NORMAL
+	var profile := _get_active_ui_profile()
+	save_button.visible = profile != null and profile.show_save
+	load_button.visible = profile != null and profile.show_load
+	auto_construct_button.visible = (
+		profile != null and profile.show_auto_construct
+	)
+	com_button.visible = profile != null and profile.show_center_of_mass
+	dismantle_button.visible = profile != null and profile.show_dismantle
 
 
 func _update_com_indicator() -> void:
@@ -204,10 +230,10 @@ func _on_build_button_toggled(enabled: bool) -> void:
 	if enabled and not building_constructor.is_active():
 		var sessions := get_tree().get_first_node_in_group(
 			"edit_session_manager"
-		) as EditSessionManager
+		) as EditorManager
 		if sessions != null:
 			build_button.tooltip_text = sessions.get_conflict_message(
-				EditSessionManager.MODE_BUILDING
+				EditorManager.MODE_BUILDING
 			)
 	else:
 		build_button.tooltip_text = "Construct building"
@@ -218,6 +244,7 @@ func _on_build_button_toggled(enabled: bool) -> void:
 func _on_vehicle_session_changed(active: bool) -> void:
 	if active:
 		set_mode(Mode.VEHICLE_EDIT)
+		_refresh_editor_ui.call_deferred()
 	elif mode == Mode.VEHICLE_EDIT:
 		set_mode(Mode.NORMAL)
 
@@ -226,6 +253,7 @@ func _on_building_session_changed(active: bool) -> void:
 	build_button.set_pressed_no_signal(active)
 	if active:
 		set_mode(Mode.BUILDING_EDIT)
+		_refresh_editor_ui.call_deferred()
 	elif mode == Mode.BUILDING_EDIT:
 		set_mode(Mode.NORMAL)
 
@@ -233,8 +261,20 @@ func _on_building_session_changed(active: bool) -> void:
 func _on_turret_session_changed(active: bool) -> void:
 	if active:
 		set_mode(Mode.TURRET_EDIT)
+		_refresh_editor_ui.call_deferred()
 	elif mode == Mode.TURRET_EDIT:
 		set_mode(Mode.NORMAL)
+
+
+func _refresh_editor_ui() -> void:
+	if mode == Mode.NORMAL:
+		return
+	tool_bar.show()
+	editor_toolbar.show()
+	editor_dock.show()
+	_apply_editor_ui_profile()
+	_apply_capabilities()
+	move_to_front()
 
 
 func _on_editor_status_changed(message: String) -> void:

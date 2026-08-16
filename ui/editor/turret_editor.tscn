@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://uaipmufrmhav"]
+
+[ext_resource type="Script" uid="uid://clskafk64shwd" path="res://ui/editor/turret_editor.gd" id="1_script"]
+[ext_resource type="Resource" uid="uid://dhu3jrsdfyuyj" path="res://ui/editor/profile/turret_editor_profile.tres" id="2_profile"]
+
+[node name="TurretEditor" type="Node" unique_id=2109497986]
+script = ExtResource("1_script")
+ui_profile = ExtResource("2_profile")

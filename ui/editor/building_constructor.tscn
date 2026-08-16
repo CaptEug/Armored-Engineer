@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://cuybb36g8non8"]
+
+[ext_resource type="Script" uid="uid://bcrbejxmubboi" path="res://ui/editor/building_constructor.gd" id="1_script"]
+[ext_resource type="Resource" uid="uid://codipfibwimcs" path="res://ui/editor/profile/building_editor_profile.tres" id="2_profile"]
+
+[node name="BuildingConstructor" type="Node" unique_id=1036131812]
+script = ExtResource("1_script")
+ui_profile = ExtResource("2_profile")

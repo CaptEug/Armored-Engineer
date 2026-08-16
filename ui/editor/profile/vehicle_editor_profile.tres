@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="EditorUIProfile" format=3 uid="uid://vmvc8k2c6pkh"]
+
+[ext_resource type="Script" uid="uid://dfi65qbp3h4lt" path="res://ui/editor/editor_ui_profile.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+show_save = true
+show_load = true
+show_auto_construct = true
+show_center_of_mass = true

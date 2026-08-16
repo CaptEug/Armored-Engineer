@@ -1,21 +1,59 @@
 [gd_scene format=3 uid="uid://dtifryfrs66im"]
 
-[ext_resource type="Script" uid="uid://m2gu1d4dl3q1" path="res://items/shells/Projectile.gd" id="1_cxorx"]
+[ext_resource type="Script" uid="uid://m2gu1d4dl3q1" path="res://items/shells/Projectile.gd" id="1_projectile"]
+[ext_resource type="Script" uid="uid://c4h0y4cvjf52m" path="res://items/shells/ballistic_smoke_trail.gd" id="2_trail"]
 
-[sub_resource type="CircleShape2D" id="CircleShape2D_xfc6o"]
+[sub_resource type="CanvasItemMaterial" id="AdditiveMaterial"]
+blend_mode = 1
+
+[sub_resource type="Gradient" id="RadialGradient"]
+offsets = PackedFloat32Array(0, 0.28, 1)
+colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0.72, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture2D" id="RadialTexture"]
+gradient = SubResource("RadialGradient")
+width = 32
+height = 32
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(1, 0.5)
+
+[sub_resource type="CircleShape2D" id="ShellShape"]
 radius = 1.0
 
-[node name="Pzgr88" type="RigidBody2D" unique_id=1624357795]
+[node name="Pzgr88" type="RigidBody2D" unique_id=563907320 node_paths=PackedStringArray("smoke_trail")]
 input_pickable = true
 linear_damp = 0.1
 angular_damp = 1.0
-script = ExtResource("1_cxorx")
-max_K_DMG = 100.0
-max_E_DMG = 0.0
-max_range = 99999
+script = ExtResource("1_projectile")
+shell_type = 2
+smoke_trail = NodePath("SmokeTrail")
 metadata/_custom_type_script = "uid://m2gu1d4dl3q1"
 
-[node name="Area2D" type="Area2D" parent="." unique_id=1738702379]
+[node name="Tracer" type="Polygon2D" parent="." unique_id=1035061773]
+z_index = 101
+material = SubResource("AdditiveMaterial")
+color = Color(1, 0.72, 0.28, 1)
+polygon = PackedVector2Array(-1.2, -6, 1.2, -6, 1.2, 6, -1.2, 6)
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D" unique_id=10481744]
-shape = SubResource("CircleShape2D_xfc6o")
+[node name="Glow" type="Sprite2D" parent="." unique_id=2006897010]
+modulate = Color(1, 0.72, 0.28, 0.72)
+z_index = 100
+material = SubResource("AdditiveMaterial")
+scale = Vector2(0.32, 0.32)
+texture = SubResource("RadialTexture")
+
+[node name="ProjectileLight" type="PointLight2D" parent="." unique_id=1801424563]
+color = Color(1, 0.72, 0.28, 1)
+energy = 1.6
+texture = SubResource("RadialTexture")
+texture_scale = 0.7
+
+[node name="SmokeTrail" type="Node2D" parent="." unique_id=1639764826]
+z_index = 90
+script = ExtResource("2_trail")
+
+[node name="Area2D" type="Area2D" parent="." unique_id=1686069840]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D" unique_id=450015819]
+shape = SubResource("ShellShape")

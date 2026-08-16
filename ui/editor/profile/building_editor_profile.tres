@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="EditorUIProfile" format=3 uid="uid://codipfibwimcs"]
+
+[ext_resource type="Script" uid="uid://dfi65qbp3h4lt" path="res://ui/editor/editor_ui_profile.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+palette_context = 1
