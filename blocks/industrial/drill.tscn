@@ -20,6 +20,7 @@ region = Rect2(0, 32, 32, 48)
 
 [node name="Drill" type="Node2D" unique_id=71089784 node_paths=PackedStringArray("drill_area", "drill_head")]
 script = ExtResource("1_hfpfy")
+armor_max_hp = 180.0
 drill_area = NodePath("Area2D")
 drill_head = NodePath("Mask/Sprite2D")
 size = Vector2i(2, 3)
@@ -57,4 +58,10 @@ texture = SubResource("AtlasTexture_upqtn")
 texture = SubResource("AtlasTexture_e8i22")
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=2122379713]
+texture = SubResource("AtlasTexture_jsdmi")
+
+[node name="Armored" type="Sprite2D" parent="."]
+visible = false
+z_index = 10
+self_modulate = Color(0.55, 0.62, 0.68, 0.85)
 texture = SubResource("AtlasTexture_jsdmi")

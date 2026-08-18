@@ -36,7 +36,9 @@ static func apply_to_host(
 	var state := state_value as Dictionary
 	if state.is_empty():
 		return miss()
-	var result := calculate(
+	var block := state.get("block") as Block
+	var result := calculate_armored(
+		block,
 		int(state.get("block_id", BlockDB.INVALID_BLOCK_ID)),
 		float(state.get("hp", 0.0)),
 		amount,
@@ -45,6 +47,52 @@ static func apply_to_host(
 	if result["hit"]:
 		host.call("commit_block_damage", state, result)
 	return result
+
+
+static func calculate_armored(
+	block: Block,
+	block_id: int,
+	current_hp: float,
+	amount: float,
+	damage_type: StringName
+) -> Dictionary:
+	if not is_instance_valid(block) or not block.is_armored:
+		return calculate(block_id, current_hp, amount, damage_type)
+	var armor_before := maxf(block.armor_hp, 0.0)
+	var armor_multiplier := BlockDB.get_armor_damage_multiplier(damage_type)
+	var armor_applied := 0.0
+	var armor_consumed := 0.0
+	if armor_multiplier <= 0.0:
+		armor_consumed = amount
+	else:
+		armor_applied = minf(amount * armor_multiplier, armor_before)
+		armor_consumed = minf(amount, armor_before / armor_multiplier)
+	var armor_after := maxf(armor_before - armor_applied, 0.0)
+	var remaining_amount := maxf(amount - armor_consumed, 0.0)
+	var base_result := (
+		calculate(block_id, current_hp, remaining_amount, damage_type)
+		if remaining_amount > 0.0
+		else calculate(block_id, current_hp, 0.0, damage_type)
+	)
+	if remaining_amount <= 0.0:
+		base_result = {
+			"hit": true,
+			"destroyed": false,
+			"hp_before": current_hp,
+			"hp_after": current_hp,
+			"damage_applied": 0.0,
+			"damage_consumed": 0.0,
+		}
+	base_result["armor_hp_before"] = armor_before
+	base_result["armor_hp_after"] = armor_after
+	base_result["armor_damage_applied"] = armor_applied
+	base_result["damage_applied"] = (
+		float(base_result["damage_applied"]) + armor_applied
+	)
+	base_result["damage_consumed"] = (
+		armor_consumed + float(base_result["damage_consumed"])
+	)
+	return base_result
 
 
 static func calculate(

@@ -13,6 +13,7 @@
 [ext_resource type="PackedScene" uid="uid://dk8l6ntdbkgbh" path="res://blocks/control/manual_cockpit.tscn" id="12_cockpit"]
 [ext_resource type="PackedScene" uid="uid://cfmnoqjl6olg0" path="res://blocks/structural/turret_mount.tscn" id="13_ayxty"]
 [ext_resource type="PackedScene" uid="uid://yrt7gi14l6ij" path="res://blocks/structural/vehicle_bay.tscn" id="13_workshop"]
+[ext_resource type="PackedScene" path="res://blocks/structural/armor.tscn" id="14_armor"]
 
 [node name="BlockPalette" type="Control" unique_id=664557349]
 layout_mode = 3
@@ -26,6 +27,9 @@ position = Vector2(56, 24)
 
 [node name="StructuralFrame" parent="." unique_id=40607816 instance=ExtResource("4_2ommr")]
 position = Vector2(24, 24)
+
+[node name="Armor" parent="." instance=ExtResource("14_armor")]
+position = Vector2(88, 24)
 
 [node name="V2" parent="." unique_id=1612667147 instance=ExtResource("5_jt0gd")]
 position = Vector2(24, 64)

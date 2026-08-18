@@ -9,6 +9,7 @@ signal turret_changed
 @export var unpowered_rotation_speed := 0.08
 @export var powered_rotation_speed := 0.6
 @export var traverse_power_demand := 100.0
+@export var turret_ring: Node2D
 
 var turret: Turret
 var supplied_power := 0.0
@@ -20,11 +21,15 @@ func _ready() -> void:
 	turret.name = "Turret"
 	add_child(turret)
 	turret.setup(self)
+	_sync_turret_ring()
 	call_deferred("notify_turret_changed")
 
 
 func _physics_process(delta: float) -> void:
-	if not is_instance_valid(turret) or _editor_is_active():
+	if not is_instance_valid(turret):
+		return
+	_sync_turret_ring()
+	if _editor_is_active():
 		return
 	var current_assembly := get_assembly()
 	if current_assembly == null or not current_assembly.has_aim_command():
@@ -47,6 +52,13 @@ func _physics_process(delta: float) -> void:
 		desired,
 		speed * delta
 	)
+	_sync_turret_ring()
+
+
+func _sync_turret_ring() -> void:
+	if not is_instance_valid(turret_ring) or not is_instance_valid(turret):
+		return
+	turret_ring.global_rotation = turret.global_rotation
 
 
 func is_power_consumer() -> bool:

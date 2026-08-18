@@ -57,6 +57,7 @@ _data = {
 
 [node name="KwK43" type="Node2D" unique_id=460751282 node_paths=PackedStringArray("muzzles", "animplayer")]
 script = ExtResource("1_rgnjj")
+armor_max_hp = 220.0
 reload = 5.0
 shells = Array[String](["PZGR88mm"])
 muzzle_energy = 800.0
@@ -121,3 +122,10 @@ texture = SubResource("AtlasTexture_nh6n7")
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=1360011288]
 libraries/ = SubResource("AnimationLibrary_8w0kc")
+
+[node name="Armored" type="Sprite2D" parent="."]
+visible = false
+z_index = 10
+self_modulate = Color(0.55, 0.62, 0.68, 0.85)
+position = Vector2(0, 40)
+texture = SubResource("AtlasTexture_8w0kc")

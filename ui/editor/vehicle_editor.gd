@@ -557,6 +557,9 @@ func place_block() -> void:
 	if block_scene == null:
 		_show_status("Cannot build: block scene is missing")
 		return
+	if BlockDB.is_armor_block(block_id) and vehicle.get_block(preview_cell) != null:
+		_install_armor_at_preview()
+		return
 	if not _can_place_selected_block(block_scene):
 		if (
 			is_instance_valid(preview_block)
@@ -605,6 +608,10 @@ func place_block() -> void:
 
 
 func _can_place_selected_block(block_scene: PackedScene) -> bool:
+	if selected_block != null and BlockDB.is_armor_block(selected_block.block_id):
+		var target := vehicle.get_block(preview_cell)
+		if target != null:
+			return target.can_install_armor() and _is_candidate_inside_workshop(target)
 	if is_instance_valid(preview_block):
 		return (
 			vehicle.can_place_block(preview_block, preview_cell)
@@ -621,6 +628,26 @@ func _can_place_selected_block(block_scene: PackedScene) -> bool:
 	)
 	candidate.free()
 	return can_place
+
+
+func _install_armor_at_preview() -> void:
+	var target := vehicle.get_block(preview_cell)
+	if target == null or not target.can_install_armor():
+		_show_status("This block cannot be armored")
+		return
+	var cost := BlockDB.get_construction_cost(BlockDB.ARMOR_BLOCK_ID)
+	var payment := ConstructionSupport.consume(cost, _get_construction_storages())
+	if not bool(payment["ok"]):
+		_show_status(
+			"Missing: %s" % ConstructionSupport.format_cost(payment["missing"])
+		)
+		return
+	if not target.install_armor():
+		ConstructionSupport.refund(payment["withdrawals"])
+		_show_status("Could not install armor; materials returned")
+		return
+	vehicle.reconcile_blueprint_with_blocks()
+	_show_status("Armored %s (-1 RHA)" % target.block_name)
 
 
 func _is_candidate_inside_workshop(candidate: Block) -> bool:
@@ -651,6 +678,11 @@ func _apply_turret_transparency(target_vehicle: Vehicle) -> void:
 				0.5,
 				transparent_turrets
 			)
+			EditorVisualPolicy.apply_alpha(
+				turret.mount.turret_ring,
+				0.5,
+				transparent_turrets
+			)
 
 
 func _restore_turret_transparency() -> void:
@@ -661,6 +693,16 @@ func remove_block() -> void:
 	if not is_instance_valid(vehicle):
 		return
 	var block := vehicle.get_block(preview_cell)
+	if block != null and block.is_armored:
+		block.remove_armor()
+		var returned := _return_armor_item()
+		vehicle.reconcile_blueprint_with_blocks()
+		_show_status(
+			"Removed armor (+1 RHA)"
+			if returned
+			else "Removed armor; no storage space for returned RHA"
+		)
+		return
 	var blueprint_changed := vehicle.remove_blueprint_record_at_cell(
 		preview_cell
 	)
@@ -668,6 +710,13 @@ func remove_block() -> void:
 		vehicle.destroy_block(block)
 	elif blueprint_changed:
 		_show_status("Removed block from blueprint")
+
+
+func _return_armor_item() -> bool:
+	for storage: ItemStorage in _get_construction_storages():
+		if is_instance_valid(storage) and storage.add_item(BlockDB.ARMOR_ITEM_NAME, 1) == 1:
+			return true
+	return false
 
 
 func create_new_vehicle(
@@ -801,6 +850,32 @@ func _construct_blueprint_record(record: Array) -> Dictionary:
 	var cell := Vector2i(int(record[1]), int(record[2]))
 	var rotation := int(record[3])
 	var block_size := VehicleBlueprint._get_record_size(record)
+	var existing := vehicle.get_block(cell)
+	if (
+		VehicleBlueprint.record_is_armored(record)
+		and existing != null
+		and existing.block_id == block_id
+		and existing.origin_cell == cell
+		and existing.rotation_index == rotation
+		and existing.size == VehicleBlueprint.get_record_base_size(record)
+	):
+		if not existing.can_install_armor():
+			return {"ok": false, "reason": "blocked"}
+		var armor_payment := ConstructionSupport.consume(
+			{BlockDB.ARMOR_ITEM_NAME: 1},
+			_get_construction_storages()
+		)
+		if not bool(armor_payment["ok"]):
+			return {
+				"ok": false,
+				"reason": "materials",
+				"missing": armor_payment["missing"],
+			}
+		if not existing.install_armor():
+			ConstructionSupport.refund(armor_payment["withdrawals"])
+			return {"ok": false, "reason": "blocked"}
+		vehicle.reconcile_blueprint_with_blocks()
+		return {"ok": true}
 	var candidate := block_scene.instantiate() as Block
 	if candidate == null:
 		return {"ok": false, "reason": "blocked"}
@@ -843,6 +918,8 @@ func _construct_blueprint_record(record: Array) -> Dictionary:
 	var placed_block := vehicle.get_block(cell)
 	if placed_block != null:
 		VehicleBlueprint.apply_record_filter(record, placed_block)
+		if VehicleBlueprint.record_is_armored(record):
+			placed_block.install_armor()
 	return {"ok": true}
 
 
@@ -854,6 +931,10 @@ func _get_record_construction_cost(record: Array) -> Dictionary:
 		unit_count = maxi(1, saved_size.x * saved_size.y)
 	for item_name: Variant in cost:
 		cost[item_name] = int(cost[item_name]) * unit_count
+	if VehicleBlueprint.record_is_armored(record):
+		cost[BlockDB.ARMOR_ITEM_NAME] = (
+			int(cost.get(BlockDB.ARMOR_ITEM_NAME, 0)) + 1
+		)
 	return cost
 
 

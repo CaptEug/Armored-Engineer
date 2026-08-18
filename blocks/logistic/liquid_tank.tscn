@@ -12,10 +12,17 @@ region = Rect2(128, 64, 16, 16)
 
 [node name="LiquidTank" type="Node2D" unique_id=418363344]
 script = ExtResource("1_24i4h")
+armor_max_hp = 120.0
 metadata/_custom_type_script = "uid://pnfcsef3bfk8"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1091049743]
 shape = SubResource("RectangleShape2D_v2fc7")
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=199387219]
+texture = SubResource("AtlasTexture_8tech")
+
+[node name="Armored" type="Sprite2D" parent="."]
+visible = false
+z_index = 10
+self_modulate = Color(0.55, 0.62, 0.68, 0.85)
 texture = SubResource("AtlasTexture_8tech")

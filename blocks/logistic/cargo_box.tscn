@@ -12,10 +12,17 @@ region = Rect2(192, 64, 16, 16)
 
 [node name="CargoBox" type="Node2D" unique_id=1017669523]
 script = ExtResource("1_storage")
+armor_max_hp = 100.0
 max_load = 1000
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1637510050]
 shape = SubResource("RectangleShape2D_cargo")
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=1744632637]
+texture = SubResource("AtlasTexture_cargo")
+
+[node name="Armored" type="Sprite2D" parent="."]
+visible = false
+z_index = 10
+self_modulate = Color(0.55, 0.62, 0.68, 0.85)
 texture = SubResource("AtlasTexture_cargo")

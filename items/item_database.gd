@@ -88,6 +88,14 @@ var items := {
 		"icon": preload("res://assets/icons/items/pzgr75.png"),
 		"shell_scene": preload("res://items/shells/ger/pzgr_88mm.tscn"),
 	},
+	10: {
+		"item_name": "RHA",
+		"display_name": "RHA",
+		"type": ItemType.MATERIAL,
+		"subclasses": [],
+		"weight": 100.0,
+		"icon": preload("res://assets/icons/items/metal.png"),
+	},
 }
 
 

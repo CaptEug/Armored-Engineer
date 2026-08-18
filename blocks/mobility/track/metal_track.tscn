@@ -16,6 +16,7 @@ region = Rect2(0, 0, 16, 16)
 
 [node name="MetalTrack" type="Node2D" unique_id=800238747 node_paths=PackedStringArray("track_sprite", "sprite_mask")]
 script = ExtResource("1_6ufjl")
+armor_max_hp = 120.0
 track_sprite = NodePath("Mask/Sprite2D")
 sprite_mask = NodePath("Mask")
 mask_front = ExtResource("2_lejlx")
@@ -29,4 +30,10 @@ shape = SubResource("RectangleShape2D_d2quv")
 clip_children = 1
 
 [node name="Sprite2D" type="Sprite2D" parent="Mask" unique_id=1025274119]
+texture = SubResource("AtlasTexture_hae06")
+
+[node name="Armored" type="Sprite2D" parent="."]
+visible = false
+z_index = 10
+self_modulate = Color(0.55, 0.62, 0.68, 0.85)
 texture = SubResource("AtlasTexture_hae06")

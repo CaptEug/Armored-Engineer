@@ -132,6 +132,9 @@ static func _validate(data: Dictionary) -> Dictionary:
 		if block == null:
 			return _error("Block ID %d is not a Block scene." % block_id)
 		block.block_id = block_id
+		if record_is_armored(record) and not block.can_install_armor():
+			block.free()
+			return _error("Block ID %d cannot receive armor." % block_id)
 		var block_size := _get_record_size(record)
 		if (
 			block_size != Vector2i.ZERO
@@ -182,21 +185,28 @@ static func _validate(data: Dictionary) -> Dictionary:
 
 
 static func _valid_block_record(record) -> bool:
-	if not record is Array or record.size() < 4 or record.size() > 7:
+	if not record is Array or record.size() < 4 or record.size() > 8:
+		return false
+	var core := (record as Array).duplicate(true)
+	if core.back() is Dictionary:
+		var armor_data := core.pop_back() as Dictionary
+		if armor_data.get("armored") != true:
+			return false
+	if core.size() < 4 or core.size() > 7:
 		return false
 	for index in 4:
-		var value: Variant = record[index]
+		var value: Variant = core[index]
 		if not value is int and not value is float:
 			return false
 		if int(value) != value:
 			return false
-	match record.size():
+	match core.size():
 		5:
-			if not record[4] is Array:
+			if not core[4] is Array:
 				return false
 		6, 7:
 			for index in [4, 5]:
-				var size_value: Variant = record[index]
+				var size_value: Variant = core[index]
 				if (
 					not size_value is int
 					and not size_value is float
@@ -204,23 +214,35 @@ static func _valid_block_record(record) -> bool:
 					return false
 				if int(size_value) != size_value or int(size_value) <= 0:
 					return false
-			if record.size() == 7 and not record[6] is Array:
+			if core.size() == 7 and not core[6] is Array:
 				return false
 	return true
 
 
 static func _get_record_size(record: Array) -> Vector2i:
-	if record.size() >= 6:
+	if (
+		record.size() >= 6
+		and (record[4] is int or record[4] is float)
+		and (record[5] is int or record[5] is float)
+	):
 		return Vector2i(int(record[4]), int(record[5]))
 	return Vector2i.ZERO
 
 
 static func _get_filter_index(record: Array) -> int:
-	if record.size() == 5:
+	if record.size() >= 5 and record[4] is Array:
 		return 4
-	if record.size() == 7:
+	if record.size() >= 7 and record[6] is Array:
 		return 6
 	return -1
+
+
+static func record_is_armored(record: Array) -> bool:
+	return (
+		not record.is_empty()
+		and record.back() is Dictionary
+		and bool((record.back() as Dictionary).get("armored", false))
+	)
 
 
 static func _sort_block_records(a: Array, b: Array) -> bool:
@@ -265,6 +287,8 @@ static func make_block_record(block: Block) -> Array:
 		var liquid_storage := block as LiquidStorage
 		if not liquid_storage.is_default_allowed_items():
 			record.append(liquid_storage.allowed_items.duplicate())
+	if block.is_armored:
+		record.append({"armored": true})
 	return record
 
 
@@ -350,6 +374,7 @@ static func record_matches_block(record: Array, block: Block) -> bool:
 		and block.origin_cell == Vector2i(int(record[1]), int(record[2]))
 		and block.rotation_index == int(record[3])
 		and block.size == get_record_base_size(record)
+		and block.is_armored == record_is_armored(record)
 	)
 
 

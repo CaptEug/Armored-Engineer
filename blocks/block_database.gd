@@ -12,6 +12,10 @@ const INFO_CONTROL := "res://ui/block_info/control_info.tscn"
 const INFO_DRILL := "res://ui/block_info/drill_info.tscn"
 const INFO_VEHICLE_BAY := "res://ui/block_info/vehiclebay_info.tscn"
 const INFO_TURRET_MOUNT := "res://ui/block_info/turret_mount_info.tscn"
+const ARMOR_BLOCK_ID := 16
+const ARMOR_ITEM_NAME := "RHA"
+const ARMOR_KINETIC_MULTIPLIER := 0.35
+const ARMOR_EXPLOSIVE_MULTIPLIER := 0.65
 
 # Integer block IDs are the compact runtime/save identity. block_name is the
 # stable String identity used by developer-authored data.
@@ -244,6 +248,22 @@ var blocks := {
 		"color": Color(0.34, 0.36, 0.39),
 		"construction_cost": {},
 	},
+	ARMOR_BLOCK_ID: {
+		"block_name": "RHA Armor",
+		"block_class": CLASS_CONSTRUCTED,
+		"allowed_hosts": [HOST_VEHICLE],
+		"scene_path": "res://blocks/structural/armor.tscn",
+		"info_section_path": INFO_GENERIC,
+		"world_functional": false,
+		"size": Vector2i(1, 1),
+		"rotatable": false,
+		"max_hp": 150.0,
+		"mass": 2.0,
+		"kinetic_damage_multiplier": ARMOR_KINETIC_MULTIPLIER,
+		"explosive_damage_multiplier": ARMOR_EXPLOSIVE_MULTIPLIER,
+		"color": Color(0.38, 0.41, 0.44),
+		"construction_cost": {ARMOR_ITEM_NAME: 1},
+	},
 }
 
 var _name_to_id: Dictionary = {}
@@ -335,6 +355,19 @@ func get_id_for_name(block_name: String) -> int:
 
 func get_construction_cost(block_id: int) -> Dictionary:
 	return get_block(block_id).get("construction_cost", {}).duplicate(true)
+
+
+func is_armor_block(block_id: int) -> bool:
+	return block_id == ARMOR_BLOCK_ID
+
+
+func get_armor_damage_multiplier(damage_type: StringName) -> float:
+	match String(damage_type).to_upper():
+		"KINETIC":
+			return ARMOR_KINETIC_MULTIPLIER
+		"EXPLOSIVE":
+			return ARMOR_EXPLOSIVE_MULTIPLIER
+	return 1.0
 
 
 func get_construction_cost_for_scene(scene_path: String) -> Dictionary:

@@ -12,6 +12,10 @@ var assembly: BlockAssembly
 var origin_cell : Vector2i
 var local_cells : Array[Vector2i]
 @export var size : Vector2i = Vector2i(1,1)
+@export_category("Armor")
+@export var armor_max_hp := 0.0
+var is_armored := false
+var armor_hp := 0.0
 var rotation_index : int = 0   # 0:0 1:90 2:180 3:270 degree
 @onready var collision := get_node_or_null("CollisionShape2D") as CollisionShape2D
 enum Side {
@@ -78,6 +82,7 @@ func _ready():
 	if edge_sockets.is_empty():
 		build_default_edge_sockets()
 	refresh_shared_visual()
+	refresh_armor_visual()
 
 
 func is_power_consumer() -> bool:
@@ -98,6 +103,50 @@ func get_save_state() -> Dictionary:
 
 func apply_save_state(_state: Dictionary) -> void:
 	pass
+
+
+func can_install_armor() -> bool:
+	return (
+		armor_max_hp > 0.0
+		and not is_armored
+		and not BlockDB.is_armor_block(block_id)
+		and get_node_or_null("Armored") is CanvasItem
+	)
+
+
+func install_armor() -> bool:
+	if not can_install_armor():
+		return false
+	is_armored = true
+	armor_hp = armor_max_hp
+	refresh_armor_visual()
+	health_changed.emit()
+	return true
+
+
+func remove_armor() -> bool:
+	if not is_armored:
+		return false
+	is_armored = false
+	armor_hp = 0.0
+	refresh_armor_visual()
+	health_changed.emit()
+	return true
+
+
+func restore_armor(saved_hp: float) -> void:
+	if armor_max_hp <= 0.0 or saved_hp <= 0.0:
+		remove_armor()
+		return
+	is_armored = true
+	armor_hp = clampf(saved_hp, 0.0, armor_max_hp)
+	refresh_armor_visual()
+
+
+func refresh_armor_visual() -> void:
+	var armored_visual := get_node_or_null("Armored") as CanvasItem
+	if armored_visual != null:
+		armored_visual.visible = is_armored
 
 
 # Block Placement
@@ -293,6 +342,10 @@ func damage(
 
 
 func apply_vehicle_damage_result(result: Dictionary) -> void:
+	if result.has("armor_hp_after"):
+		armor_hp = maxf(float(result["armor_hp_after"]), 0.0)
+		is_armored = armor_hp > 0.001
+		refresh_armor_visual()
 	_local_hp = float(result.get("hp_after", _local_hp))
 	health_changed.emit()
 	if bool(result.get("destroyed", false)):

@@ -544,6 +544,11 @@ func _apply_turret_transparency() -> void:
 				0.5,
 				transparent_turrets
 			)
+			EditorVisualPolicy.apply_alpha(
+				turret.mount.turret_ring,
+				0.5,
+				transparent_turrets
+			)
 
 
 func _restore_turret_transparency() -> void:

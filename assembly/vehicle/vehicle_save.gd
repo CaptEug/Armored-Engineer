@@ -147,6 +147,8 @@ static func _capture_block(block: Block) -> Array:
 	var extra := {}
 	if block.size != BlockDB.get_size(block.block_id):
 		extra["size"] = [block.size.x, block.size.y]
+	if block.is_armored:
+		extra["armor_hp"] = block.armor_hp
 	var state := block.get_save_state()
 	if not state.is_empty():
 		extra["state"] = state
@@ -251,10 +253,11 @@ static func _restore_block(
 		return _error("Vehicle block %d has no scene." % block_id)
 	var block_size := Vector2i.ZERO
 	var state := {}
+	var extra := {}
 	if record.size() == 6:
 		if not record[5] is Dictionary:
 			return _error("Invalid vehicle block extra state.")
-		var extra := record[5] as Dictionary
+		extra = record[5] as Dictionary
 		var size_value: Variant = extra.get("size")
 		if size_value != null:
 			if not _is_vector_record(size_value):
@@ -287,6 +290,8 @@ static func _restore_block(
 		return _error("Restored vehicle block could not be resolved.")
 	var health := clampi(int(record[4]), 0, 65535)
 	block.hp = block.max_hp * float(health) / 65535.0
+	if extra.has("armor_hp"):
+		block.restore_armor(float(extra["armor_hp"]))
 	block.apply_save_state(state)
 	return {"ok": true}
 
