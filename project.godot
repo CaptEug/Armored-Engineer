@@ -22,6 +22,7 @@ config/features=PackedStringArray("4.7", "Forward Plus")
 
 Globals="*uid://txmi1b8smg1j"
 GameState="*res://GameState.gd"
+TerrainDB="*res://map/terrain_database.gd"
 BlockDB="*res://blocks/block_database.gd"
 ItemDB="*res://items/item_database.gd"
 

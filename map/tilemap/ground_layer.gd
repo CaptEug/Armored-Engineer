@@ -2,18 +2,22 @@ class_name GroundLayer
 extends TileMapLayer
 
 @onready var gamemap: GameMap = get_parent()
-var ground_tiles: Dictionary = {}
+var terrain_tiles: Dictionary = {}
 
 
 func _ready() -> void:
-	build_ground_cache()
+	build_terrain_cache()
 
 
-func build_ground_cache() -> void:
-	ground_tiles.clear()
+func build_terrain_cache() -> void:
+	terrain_tiles.clear()
+	if tile_set == null:
+		return
 	for source_index in tile_set.get_source_count():
 		var source_id := tile_set.get_source_id(source_index)
-		var source := tile_set.get_source(source_id) as TileSetAtlasSource
+		var source := tile_set.get_source(
+			source_id
+		) as TileSetAtlasSource
 		if source == null:
 			continue
 		for tile_index in source.get_tiles_count():
@@ -21,54 +25,64 @@ func build_ground_cache() -> void:
 			var data := source.get_tile_data(coordinates, 0)
 			if data == null:
 				continue
-			var block_id := int(data.get_custom_data("block_id"))
-			if not BlockDB.is_ground(block_id):
+			var terrain_id := int(
+				data.get_custom_data("terrain_id")
+			)
+			if not TerrainDB.has_terrain(terrain_id):
 				continue
-			if not ground_tiles.has(block_id):
-				ground_tiles[block_id] = []
-			ground_tiles[block_id].append({
+			if not terrain_tiles.has(terrain_id):
+				terrain_tiles[terrain_id] = []
+			terrain_tiles[terrain_id].append({
 				"source": source_id,
 				"coordinates": coordinates,
 			})
 
 
-func place_ground(position: Vector2i, block_id: int) -> bool:
-	if not BlockDB.is_ground(block_id):
+func place_terrain(cell: Vector2i, terrain_id: int) -> bool:
+	if not TerrainDB.has_terrain(terrain_id):
 		return false
-	if not ground_tiles.has(block_id):
+	if not terrain_tiles.has(terrain_id):
 		push_error(
-			"No ground variants for block ID %d." % block_id
+			"No terrain variants for terrain ID %d." % terrain_id
 		)
 		return false
-	var variants: Array = ground_tiles[block_id]
+	var variants: Array = terrain_tiles[terrain_id]
 	var choice: Dictionary = variants[
-		get_variant(position, variants.size())
+		_get_variant(cell, variants.size())
 	]
 	set_cell(
-		position,
+		cell,
 		int(choice["source"]),
 		choice["coordinates"]
 	)
 	return true
 
 
-func get_variant(position: Vector2i, variant_count: int) -> int:
+func _get_variant(cell: Vector2i, variant_count: int) -> int:
 	return posmod(
-		hash(Vector3i(position.x, position.y, hash(gamemap.world_seed))),
+		hash(Vector3i(cell.x, cell.y, hash(gamemap.world_seed))),
 		variant_count
 	)
 
 
-func get_ground_block_id_at(cell: Vector2i) -> int:
+func get_terrain_id_at(cell: Vector2i) -> int:
 	var data := get_cell_tile_data(cell)
 	if data == null:
-		return BlockDB.INVALID_BLOCK_ID
-	var block_id := int(data.get_custom_data("block_id"))
+		return TerrainDB.INVALID_TERRAIN_ID
+	var terrain_id := int(data.get_custom_data("terrain_id"))
 	return (
-		block_id
-		if BlockDB.is_ground(block_id)
-		else BlockDB.INVALID_BLOCK_ID
+		terrain_id
+		if TerrainDB.has_terrain(terrain_id)
+		else TerrainDB.INVALID_TERRAIN_ID
 	)
+
+
+func get_terrain_data_at(cell: Vector2i) -> Dictionary:
+	return TerrainDB.get_terrain(get_terrain_id_at(cell))
+
+
+func is_buildable(cell: Vector2i) -> bool:
+	return TerrainDB.is_buildable(get_terrain_id_at(cell))
 
 
 func save_chunk(
@@ -86,10 +100,12 @@ func save_chunk(
 				world_origin.x + chunk_x * CHUNK_SIZE + local_x,
 				world_origin.y + chunk_y * CHUNK_SIZE + local_y
 			)
-			var block_id := get_ground_block_id_at(cell)
+			var terrain_id := get_terrain_id_at(cell)
 			bytes.encode_u16(
 				index,
-				0 if block_id == BlockDB.INVALID_BLOCK_ID else block_id
+				0
+				if terrain_id == TerrainDB.INVALID_TERRAIN_ID
+				else terrain_id
 			)
 			index += 2
 	return bytes
@@ -102,22 +118,38 @@ func load_chunk(
 	chunk_size: int,
 	world_origin: Vector2i = Vector2i.ZERO
 ) -> void:
+	_load_chunk_data(
+		chunk_x,
+		chunk_y,
+		bytes,
+		chunk_size,
+		world_origin
+	)
+
+
+func _load_chunk_data(
+	chunk_x: int,
+	chunk_y: int,
+	bytes: PackedByteArray,
+	chunk_size: int,
+	world_origin: Vector2i
+) -> void:
 	var expected_size := chunk_size * chunk_size * 2
 	if bytes.size() < expected_size:
-		push_error("Ground chunk is truncated.")
+		push_error("Terrain chunk is truncated.")
 		return
 	var index := 0
 	for local_y in range(chunk_size):
 		for local_x in range(chunk_size):
-			var block_id := bytes.decode_u16(index)
+			var terrain_id := bytes.decode_u16(index)
 			index += 2
-			if block_id <= 0:
+			if terrain_id <= 0:
 				continue
-			if not BlockDB.is_ground(block_id):
-				push_error("Unknown saved ground block ID %d." % block_id)
+			if not TerrainDB.has_terrain(terrain_id):
+				push_error("Unknown saved terrain ID %d." % terrain_id)
 				continue
 			var cell := Vector2i(
 				world_origin.x + chunk_x * chunk_size + local_x,
 				world_origin.y + chunk_y * chunk_size + local_y
 			)
-			place_ground(cell, block_id)
+			place_terrain(cell, terrain_id)

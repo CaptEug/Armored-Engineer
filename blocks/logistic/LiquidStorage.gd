@@ -55,6 +55,8 @@ func apply_save_state(state: Dictionary) -> void:
 
 
 func can_union_members(members: Array) -> bool:
+	if not super(members):
+		return false
 	var contained_liquid := ""
 	for value: Variant in members:
 		var storage := value as LiquidStorage

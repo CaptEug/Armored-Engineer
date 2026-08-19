@@ -124,15 +124,7 @@ static func _is_legitimate_site(
 			if (
 				gamemap.world_blocks.get_block_id_at(cell)
 				!= BlockDB.INVALID_BLOCK_ID
-				or gamemap.liquid.get_block_id_at(cell)
-				!= BlockDB.INVALID_BLOCK_ID
-			):
-				return false
-	for y in range(origin.y, origin.y + footprint.y):
-		for x in range(origin.x, origin.x + footprint.x):
-			if (
-				gamemap.ground.get_ground_block_id_at(Vector2i(x, y))
-				== BlockDB.INVALID_BLOCK_ID
+				or not gamemap.ground.is_buildable(cell)
 			):
 				return false
 	for anchor_offset: Vector2i in anchors:

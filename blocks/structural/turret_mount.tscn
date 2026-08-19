@@ -17,8 +17,8 @@ region = Rect2(48, 144, 48, 48)
 [node name="TurretMount3x3" type="Node2D" unique_id=1788194205 node_paths=PackedStringArray("turret_ring")]
 script = ExtResource("1_script")
 turret_ring = NodePath("TurretRing")
-armor_max_hp = 300.0
 size = Vector2i(3, 3)
+armor_max_hp = 300.0
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=510273014]
 shape = SubResource("RectangleShape_mount")
@@ -29,8 +29,7 @@ texture = SubResource("AtlasTexture_ymebo")
 [node name="TurretRing" type="Sprite2D" parent="." unique_id=863895822]
 texture = SubResource("AtlasTexture_jsdmi")
 
-[node name="Armored" type="Sprite2D" parent="."]
+[node name="Armored" type="Sprite2D" parent="." unique_id=1218902896]
 visible = false
 z_index = 10
-self_modulate = Color(0.55, 0.62, 0.68, 0.85)
 texture = SubResource("AtlasTexture_ymebo")

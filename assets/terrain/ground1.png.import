@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ctig6s6lnlklm"
-path="res://.godot/imported/metal_track_back.png-17030ff44cff218c31309a4be2fb774c.ctex"
+uid="uid://bfm1ixppv8f30"
+path="res://.godot/imported/ground1.png-79fc2bed92ae7cae19f037b0155c636d.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/masks/metal_track_back.png"
-dest_files=["res://.godot/imported/metal_track_back.png-17030ff44cff218c31309a4be2fb774c.ctex"]
+source_file="res://assets/terrain/ground1.png"
+dest_files=["res://.godot/imported/ground1.png-79fc2bed92ae7cae19f037b0155c636d.ctex"]
 
 [params]
 

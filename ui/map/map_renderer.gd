@@ -29,8 +29,6 @@ func loadmap() -> void:
 		_refresh_cell_color(cell)
 	for cell: Vector2i in map.world_blocks.cell_occupancy:
 		_refresh_cell_color(cell)
-	for cell: Vector2i in map.liquid.layerdata:
-		_refresh_cell_color(cell)
 	for cell: Vector2i in cell_colors:
 		var image_cell := _to_image_cell(cell)
 		if Rect2i(Vector2i.ZERO, image.get_size()).has_point(image_cell):
@@ -56,15 +54,9 @@ func _refresh_cell_color(cell: Vector2i) -> void:
 	if block_id != BlockDB.INVALID_BLOCK_ID:
 		cell_colors[cell] = BlockDB.get_color(block_id)
 		return
-	var liquid_state := map.liquid.get_celldata(cell)
-	if not liquid_state.is_empty():
-		cell_colors[cell] = BlockDB.get_color(
-			int(liquid_state["block_id"])
-		)
-		return
-	var ground_block_id := map.ground.get_ground_block_id_at(cell)
-	if ground_block_id != BlockDB.INVALID_BLOCK_ID:
-		cell_colors[cell] = BlockDB.get_color(ground_block_id)
+	var terrain_id := map.ground.get_terrain_id_at(cell)
+	if terrain_id != TerrainDB.INVALID_TERRAIN_ID:
+		cell_colors[cell] = TerrainDB.get_color(terrain_id)
 		return
 	cell_colors.erase(cell)
 

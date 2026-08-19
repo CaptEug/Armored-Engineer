@@ -8,9 +8,9 @@ var drive_force : float = 0.0
 @export var slip_threshold : float = 100.0
 @export var track_sprite : Sprite2D
 @export var sprite_mask : Sprite2D
-@export var mask_front : CompressedTexture2D
-@export var mask_back : CompressedTexture2D
-@export var mask_single : CompressedTexture2D
+@export var mask_front : Texture2D
+@export var mask_back : Texture2D
+@export var mask_single : Texture2D
 @onready var sprite_origin : Vector2 = track_sprite.texture.region.position
 var connected_tracks: Array[Track] = []
 var front_track: Track = null

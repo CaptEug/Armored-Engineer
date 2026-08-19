@@ -4,7 +4,6 @@
 [ext_resource type="TileSet" uid="uid://dtpjtgfhc1jn5" path="res://assets/resources/tiles.tres" id="2_8k602"]
 [ext_resource type="Script" uid="uid://cr4tpklyudwin" path="res://map/tilemap/world_block_layer.gd" id="2_i3gmg"]
 [ext_resource type="Script" uid="uid://cw85p5j1usqjd" path="res://map/tilemap/ground_layer.gd" id="3_7we3v"]
-[ext_resource type="Script" uid="uid://tlan82mfwxap" path="res://map/tilemap/liquid_layer.gd" id="4_liquid"]
 [ext_resource type="Script" uid="uid://c5e5skv5tfrvd" path="res://scene/day&night.gd" id="5_y5b6y"]
 [ext_resource type="Script" uid="uid://febxvt3qcdf4" path="res://map/vehicle_root.gd" id="6_ldbmw"]
 [ext_resource type="Script" uid="uid://baw25ac4mr1a4" path="res://assembly/building/building_system.gd" id="7_buildings"]
@@ -32,10 +31,6 @@ script = ExtResource("2_i3gmg")
 
 [node name="BuildingSystem" type="Node" parent="WorldBlockLayer" unique_id=1946405205]
 script = ExtResource("7_buildings")
-
-[node name="LiquidLayer" type="TileMapLayer" parent="." unique_id=841302961]
-tile_set = ExtResource("2_8k602")
-script = ExtResource("4_liquid")
 
 [node name="VehicleRoot" type="Node2D" parent="." unique_id=1036498771]
 script = ExtResource("6_ldbmw")

@@ -186,20 +186,6 @@ var blocks := {
 		"particle_path": "res://assets/particles/sandstone_shard.tscn",
 		"construction_cost": {},
 	},
-	11: {
-		"block_name": "Crude Oil",
-		"phase": "liquid",
-		"info_section_path": INFO_GENERIC,
-		"mass": 1000.0,
-		"mining_yield": "crude_oil",
-		"color": Color(0.149, 0.078, 0.310),
-	},
-	12: {
-		"block_name": "Sandstone Ground",
-		"phase": "ground",
-		"info_section_path": INFO_GENERIC,
-		"color": Color(0.533, 0.251, 0.176),
-	},
 	13: {
 		"block_name": "Drill",
 		"block_class": CLASS_CONSTRUCTED,
@@ -394,20 +380,6 @@ func is_world_functional(block_id: int) -> bool:
 	return bool(get_block(block_id).get("world_functional", false))
 
 
-func is_liquid(block_id: int) -> bool:
-	return get_block(block_id).get("phase", "") == "liquid"
-
-
-func is_ground(block_id: int) -> bool:
-	return get_block(block_id).get("phase", "") == "ground"
-
-
-func get_default_liquid_mass(block_id: int) -> float:
-	if not is_liquid(block_id):
-		return 0.0
-	return maxf(float(get_block(block_id).get("mass", 0.0)), 0.0)
-
-
 func is_rotatable(block_id: int) -> bool:
 	return bool(get_block(block_id).get("rotatable", false))
 
@@ -465,24 +437,6 @@ func validate_database(tile_set: TileSet = null) -> PackedStringArray:
 				"Block %s has missing information section %s."
 				% [block_name, info_section_path]
 			)
-		if is_liquid(block_id):
-			if get_default_liquid_mass(block_id) <= 0.0:
-				errors.append(
-					"Liquid block %s has invalid mass." % block_name
-				)
-			if not BlockVisualSystem.has_block_tile_visual(block_id):
-				errors.append(
-					"Liquid block %s has no TileSet block_id visual."
-					% block_name
-				)
-			continue
-		if is_ground(block_id):
-			if not BlockVisualSystem.has_block_tile_visual(block_id):
-				errors.append(
-					"Ground block %s has no TileSet block_id visual."
-					% block_name
-				)
-			continue
 		if float(definition.get("max_hp", 0.0)) <= 0.0:
 			errors.append("Block %s has invalid max_hp." % block_name)
 		var scene_path := str(definition.get("scene_path", ""))

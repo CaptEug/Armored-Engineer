@@ -2,9 +2,18 @@
 
 [ext_resource type="Script" uid="uid://ge55320u7fra" path="res://blocks/mobility/track/Track.gd" id="1_6ufjl"]
 [ext_resource type="Texture2D" uid="uid://b0hkyvua53ptx" path="res://assets/blocks/basic.png" id="2_4yfob"]
-[ext_resource type="Texture2D" uid="uid://dcg5j0hl0gr37" path="res://assets/masks/metai_track_front.png" id="2_lejlx"]
-[ext_resource type="Texture2D" uid="uid://ctig6s6lnlklm" path="res://assets/masks/metal_track_back.png" id="3_gx4qe"]
-[ext_resource type="Texture2D" uid="uid://b3ixwgoj42722" path="res://assets/masks/metal_track_single.png" id="4_wi0xm"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_hlwy1"]
+atlas = ExtResource("2_4yfob")
+region = Rect2(16, 0, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_lejlx"]
+atlas = ExtResource("2_4yfob")
+region = Rect2(16, 16, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_gx4qe"]
+atlas = ExtResource("2_4yfob")
+region = Rect2(16, 32, 16, 16)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_d2quv"]
 size = Vector2(16, 16)
@@ -16,12 +25,12 @@ region = Rect2(0, 0, 16, 16)
 
 [node name="MetalTrack" type="Node2D" unique_id=800238747 node_paths=PackedStringArray("track_sprite", "sprite_mask")]
 script = ExtResource("1_6ufjl")
-armor_max_hp = 120.0
 track_sprite = NodePath("Mask/Sprite2D")
 sprite_mask = NodePath("Mask")
-mask_front = ExtResource("2_lejlx")
-mask_back = ExtResource("3_gx4qe")
-mask_single = ExtResource("4_wi0xm")
+mask_front = SubResource("AtlasTexture_hlwy1")
+mask_back = SubResource("AtlasTexture_lejlx")
+mask_single = SubResource("AtlasTexture_gx4qe")
+armor_max_hp = 120.0
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1365564482]
 shape = SubResource("RectangleShape2D_d2quv")
@@ -32,8 +41,8 @@ clip_children = 1
 [node name="Sprite2D" type="Sprite2D" parent="Mask" unique_id=1025274119]
 texture = SubResource("AtlasTexture_hae06")
 
-[node name="Armored" type="Sprite2D" parent="."]
+[node name="Armored" type="Sprite2D" parent="." unique_id=1390708184]
 visible = false
-z_index = 10
 self_modulate = Color(0.55, 0.62, 0.68, 0.85)
+z_index = 10
 texture = SubResource("AtlasTexture_hae06")

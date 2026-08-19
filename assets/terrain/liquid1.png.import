@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bfm1ixppv8f30"
-path="res://.godot/imported/ground1.png-765efdf3311967421fab5022bb5fe1c3.ctex"
+uid="uid://cg424y6jnmul8"
+path="res://.godot/imported/liquid1.png-0306ded4c65852a7281d01db87d7be93.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/blocks/ground1.png"
-dest_files=["res://.godot/imported/ground1.png-765efdf3311967421fab5022bb5fe1c3.ctex"]
+source_file="res://assets/terrain/liquid1.png"
+dest_files=["res://.godot/imported/liquid1.png-0306ded4c65852a7281d01db87d7be93.ctex"]
 
 [params]
 

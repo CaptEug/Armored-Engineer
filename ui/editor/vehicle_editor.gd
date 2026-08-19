@@ -695,6 +695,7 @@ func remove_block() -> void:
 	var block := vehicle.get_block(preview_cell)
 	if block != null and block.is_armored:
 		block.remove_armor()
+		vehicle.merge_rectangular_unions()
 		var returned := _return_armor_item()
 		vehicle.reconcile_blueprint_with_blocks()
 		_show_status(

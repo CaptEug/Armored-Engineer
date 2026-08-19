@@ -246,7 +246,6 @@ func can_place_block(
 ) -> bool:
 	if (
 		not BlockDB.has_block(block_id)
-		or BlockDB.is_liquid(block_id)
 		or not BlockDB.can_place_on(block_id, BlockDB.HOST_WORLD)
 	):
 		return false
@@ -269,9 +268,8 @@ func can_place_block(
 			return false
 		if (
 			gamemap != null
-			and is_instance_valid(gamemap.liquid)
-			and gamemap.liquid.get_block_id_at(cell)
-			!= BlockDB.INVALID_BLOCK_ID
+			and is_instance_valid(gamemap.ground)
+			and not gamemap.ground.is_buildable(cell)
 		):
 			return false
 

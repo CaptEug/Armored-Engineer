@@ -2,9 +2,14 @@
 
 [ext_resource type="Script" uid="uid://duc07omadof0i" path="res://blocks/control/manual_cockpit.gd" id="1_cockpit"]
 [ext_resource type="Texture2D" uid="uid://d1boi4b4eg236" path="res://assets/blocks/ussr1.png" id="2_kbhag"]
+[ext_resource type="Texture2D" uid="uid://b0hkyvua53ptx" path="res://assets/blocks/basic.png" id="2_rso0k"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_cockpit"]
 size = Vector2(16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_kbhag"]
+atlas = ExtResource("2_rso0k")
+region = Rect2(16, 48, 16, 16)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_1hsoc"]
 atlas = ExtResource("2_kbhag")
@@ -26,10 +31,9 @@ Vector2i(0, 0): {
 shape = SubResource("RectangleShape2D_cockpit")
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=1795052325]
-texture = SubResource("AtlasTexture_1hsoc")
+texture = SubResource("AtlasTexture_kbhag")
 
-[node name="Armored" type="Sprite2D" parent="."]
+[node name="Armored" type="Sprite2D" parent="." unique_id=783307285]
 visible = false
 z_index = 10
-self_modulate = Color(0.55, 0.62, 0.68, 0.85)
 texture = SubResource("AtlasTexture_1hsoc")

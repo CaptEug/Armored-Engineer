@@ -96,7 +96,6 @@ func _update_hover_target() -> void:
 	var turret_shape_index := -1
 	var detected_world_block: Block
 	var world_blocks: WorldBlockLayer
-	var liquid_layer: LiquidLayer
 	var known_world_anchor := WorldBlockLayer.INVALID_CELL
 	for hit: Dictionary in get_world_2d().direct_space_state.intersect_point(
 		query
@@ -117,8 +116,6 @@ func _update_hover_target() -> void:
 			known_world_anchor = body.anchor_cell
 		elif collider is WorldBlockLayer:
 			world_blocks = collider as WorldBlockLayer
-		elif collider is LiquidLayer:
-			liquid_layer = collider as LiquidLayer
 
 	if turret != null:
 		var turret_block := turret.get_block_for_shape(turret_shape_index)
@@ -135,8 +132,6 @@ func _update_hover_target() -> void:
 			world_position,
 			known_world_anchor
 		)
-	elif liquid_layer != null:
-		_show_liquid(liquid_layer, world_position)
 	else:
 		_hide_compact()
 
@@ -193,35 +188,6 @@ func _show_world_block(
 			layer.get_instance_id(),
 			anchor.x,
 			anchor.y,
-		]
-	)
-
-
-func _show_liquid(
-	layer: LiquidLayer,
-	world_position: Vector2
-) -> void:
-	var cell := layer.local_to_map(layer.to_local(world_position))
-	var state := layer.get_celldata(cell)
-	if state.is_empty():
-		_hide_compact()
-		return
-	var total_mass := layer.get_total_liquid_mass(
-		layer.get_connected_liquid(cell)
-	)
-	var mass_text := (
-		"Total mass: %.0f kg" % total_mass
-		if total_mass < 1000.0
-		else "Total mass: %.1f T" % (total_mass / 1000.0)
-	)
-	_show_info(
-		int(state["block_id"]),
-		mass_text,
-		null,
-		"liquid:%d:%d:%d" % [
-			layer.get_instance_id(),
-			cell.x,
-			cell.y,
 		]
 	)
 

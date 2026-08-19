@@ -19,7 +19,11 @@ func get_union_key() -> String:
 	return scene_file_path
 
 
-func can_union_members(_members: Array) -> bool:
+func can_union_members(members: Array) -> bool:
+	for value: Variant in members:
+		var member := value as ExpandableBlock
+		if member == null or member.is_armored:
+			return false
 	return true
 
 
