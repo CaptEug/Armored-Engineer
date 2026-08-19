@@ -396,7 +396,7 @@ func get_constructed_save_data() -> Array:
 			var block_id := int(state["block_id"])
 			var size: Vector2i = state.get(
 				"size",
-				BlockDB.get_size(block_id)
+				BlockDB.get_base_size(block_id)
 			)
 			var max_hp := world_blocks.get_state_max_hp(
 				block_id,
@@ -419,7 +419,7 @@ func get_constructed_save_data() -> Array:
 				health,
 			]
 			var extra := {}
-			if size != BlockDB.get_size(block_id):
+			if size != BlockDB.get_base_size(block_id):
 				extra["size"] = [size.x, size.y]
 			var functional := world_blocks.functional_nodes.get(
 				anchor,
@@ -491,7 +491,7 @@ func restore_constructed_save_data(records: Array) -> void:
 			)
 			var rotation := int(record[3])
 			var health := clampi(int(record[4]), 0, 65535)
-			var size := BlockDB.get_size(block_id)
+			var size := BlockDB.get_base_size(block_id)
 			var functional_state := {}
 			if record.size() >= 6 and record[5] is Dictionary:
 				var extra := record[5] as Dictionary

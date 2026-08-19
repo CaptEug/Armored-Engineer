@@ -145,7 +145,7 @@ static func _capture_block(block: Block) -> Array:
 		health,
 	]
 	var extra := {}
-	if block.size != BlockDB.get_size(block.block_id):
+	if block.size != BlockDB.get_base_size(block.block_id):
 		extra["size"] = [block.size.x, block.size.y]
 	if block.is_armored:
 		extra["armor_hp"] = block.armor_hp

@@ -13,7 +13,6 @@ region = Rect2(0, 0, 32, 32)
 
 [node name="VehicleBay" type="Node2D" unique_id=1701937097]
 script = ExtResource("1_workshop")
-size = Vector2i(2, 2)
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 texture = SubResource("AtlasTexture_workshop")

@@ -315,7 +315,7 @@ func place_block(
 		normalized_rotation,
 		initial_hp
 	)
-	if BlockDB.is_world_functional(block_id):
+	if BlockDB.uses_live_world_node(block_id):
 		_spawn_functional_node(anchor)
 	else:
 		_render_passive_block(anchor)
@@ -518,7 +518,7 @@ func save_chunk(
 			bytes.encode_u16(offset, block_id)
 			var max_hp := get_state_max_hp(
 				block_id,
-				state.get("size", BlockDB.get_size(block_id))
+				state.get("size", BlockDB.get_base_size(block_id))
 			)
 			var health := clampi(
 				roundi(float(state["hp"]) / maxf(max_hp, 0.001) * 65535.0),
@@ -609,7 +609,7 @@ func restore_constructed_block(
 		clampf(hp, 0.0, get_state_max_hp(block_id, block_size)),
 		block_size
 	)
-	if BlockDB.is_world_functional(block_id):
+	if BlockDB.uses_live_world_node(block_id):
 		_spawn_functional_node(anchor)
 		var functional := functional_nodes.get(anchor, null) as Block
 		if functional != null:
@@ -633,7 +633,7 @@ func _register_block_state(
 	block_size: Vector2i = Vector2i.ZERO
 ) -> void:
 	if block_size == Vector2i.ZERO:
-		block_size = BlockDB.get_size(block_id)
+		block_size = BlockDB.get_base_size(block_id)
 	block_records[anchor] = {
 		"block_id": block_id,
 		"hp": hp,
@@ -653,7 +653,7 @@ func get_state_max_hp(
 	block_id: int,
 	block_size: Vector2i = Vector2i.ZERO
 ) -> float:
-	var base_size := BlockDB.get_size(block_id)
+	var base_size := BlockDB.get_base_size(block_id)
 	if block_size == Vector2i.ZERO:
 		block_size = base_size
 	var base_units := maxi(base_size.x * base_size.y, 1)
@@ -672,7 +672,7 @@ func _get_occupied_cells(
 	block_size: Vector2i = Vector2i.ZERO
 ) -> Array[Vector2i]:
 	if block_size == Vector2i.ZERO:
-		block_size = BlockDB.get_size(block_id)
+		block_size = BlockDB.get_base_size(block_id)
 	if rotation_index % 2 != 0:
 		block_size = Vector2i(block_size.y, block_size.x)
 	var cells: Array[Vector2i] = []
@@ -812,11 +812,11 @@ func _spawn_functional_node(anchor: Vector2i) -> void:
 	if block == null:
 		push_error("Functional scene is not a Block: %s." % scene.resource_path)
 		return
-	block.block_id = block_id
+	block.configure_block_id(block_id)
 	if block is ExpandableBlock:
 		var stored_size: Vector2i = state.get(
 			"size",
-			BlockDB.get_size(block_id)
+			BlockDB.get_base_size(block_id)
 		)
 		if stored_size != block.size:
 			(block as ExpandableBlock).configure_union_size(

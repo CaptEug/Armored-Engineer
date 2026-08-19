@@ -198,7 +198,7 @@ func get_total_mass() -> float:
 		if state.is_empty():
 			continue
 		var block_id := int(state["block_id"])
-		var base_size := BlockDB.get_size(block_id)
+		var base_size := BlockDB.get_base_size(block_id)
 		var stored_size: Vector2i = state.get("size", base_size)
 		var base_units := maxi(base_size.x * base_size.y, 1)
 		var stored_units := maxi(stored_size.x * stored_size.y, 1)

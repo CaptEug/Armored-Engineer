@@ -63,7 +63,6 @@ shells = Array[String](["PZGR88mm"])
 muzzle_energy = 800.0
 muzzles = [NodePath("Barrel/Marker2D")]
 animplayer = NodePath("AnimationPlayer")
-size = Vector2i(1, 8)
 edge_sockets = Dictionary[Vector2i, Dictionary]({
 Vector2i(0, 0): {
 0: false,

@@ -31,7 +31,7 @@ func configure_union_size(new_size: Vector2i) -> bool:
 	if new_size.x <= 0 or new_size.y <= 0:
 		return false
 	var base_size := (
-		BlockDB.get_size(block_id)
+		BlockDB.get_base_size(block_id)
 		if BlockDB.has_block(block_id)
 		else size
 	)

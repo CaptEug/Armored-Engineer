@@ -11,7 +11,7 @@ var block_host: Node
 var assembly: BlockAssembly
 var origin_cell : Vector2i
 var local_cells : Array[Vector2i]
-@export var size : Vector2i = Vector2i(1,1)
+var size := Vector2i.ONE
 @export_category("Armor")
 @export var armor_max_hp := 0.0
 var is_armored := false
@@ -58,15 +58,22 @@ var hp: float:
 var mass := 0.0
 
 
+func configure_block_id(value: int) -> void:
+	block_id = value
+	if BlockDB.has_block(block_id):
+		size = BlockDB.get_base_size(block_id)
+
+
 func _ready():
 	if block_id == BlockDB.INVALID_BLOCK_ID:
-		block_id = BlockDB.get_id_for_name(block_name)
-	if block_id == BlockDB.INVALID_BLOCK_ID:
-		block_id = BlockDB.get_id_for_scene(scene_file_path)
+		var resolved_id := BlockDB.get_id_for_name(block_name)
+		if resolved_id == BlockDB.INVALID_BLOCK_ID:
+			resolved_id = BlockDB.get_id_for_scene(scene_file_path)
+		configure_block_id(resolved_id)
 	if BlockDB.has_block(block_id):
 		var definition := BlockDB.get_block(block_id)
 		block_name = BlockDB.get_block_name(block_id)
-		var base_size: Vector2i = definition.get("size", size)
+		var base_size := BlockDB.get_base_size(block_id)
 		var base_units := maxi(base_size.x * base_size.y, 1)
 		var configured_units := maxi(size.x * size.y, 1)
 		var unit_scale := maxf(

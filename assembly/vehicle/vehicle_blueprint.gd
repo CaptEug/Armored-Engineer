@@ -131,7 +131,7 @@ static func _validate(data: Dictionary) -> Dictionary:
 			block = scene.instantiate() as Block
 		if block == null:
 			return _error("Block ID %d is not a Block scene." % block_id)
-		block.block_id = block_id
+		block.configure_block_id(block_id)
 		if record_is_armored(record) and not block.can_install_armor():
 			block.free()
 			return _error("Block ID %d cannot receive armor." % block_id)
@@ -275,7 +275,7 @@ static func make_block_record(block: Block) -> Array:
 	]
 	if (
 		block is ExpandableBlock
-		and block.size != BlockDB.get_size(block_id)
+		and block.size != BlockDB.get_base_size(block_id)
 	):
 		record.append(block.size.x)
 		record.append(block.size.y)
@@ -408,7 +408,7 @@ static func get_record_base_size(record: Array) -> Vector2i:
 	var saved_size := _get_record_size(record)
 	if saved_size != Vector2i.ZERO:
 		return saved_size
-	return BlockDB.get_size(int(record[0]))
+	return BlockDB.get_base_size(int(record[0]))
 
 
 static func get_record_filter(record: Array) -> Array:

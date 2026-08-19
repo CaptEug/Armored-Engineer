@@ -202,7 +202,7 @@ func create_preview_block() -> void:
 	preview_block = scene.instantiate() as Block
 	if preview_block == null:
 		return
-	preview_block.block_id = selected_block.block_id
+	preview_block.configure_block_id(selected_block.block_id)
 	preview_block.z_index = 100
 	world_blocks.add_child(preview_block)
 	preview_block.process_mode = Node.PROCESS_MODE_DISABLED
@@ -427,7 +427,7 @@ func _get_block_center_world(
 	anchor: Vector2i,
 	rotation_index: int
 ) -> Vector2:
-	var block_size := BlockDB.get_size(block_id)
+	var block_size := BlockDB.get_base_size(block_id)
 	if BlockDB.normalize_rotation(block_id, rotation_index) % 2 != 0:
 		block_size = Vector2i(block_size.y, block_size.x)
 	var local_center := (
@@ -442,7 +442,7 @@ func _get_occupied_cells(
 	anchor: Vector2i,
 	rotation_index: int
 ) -> Array[Vector2i]:
-	var block_size := BlockDB.get_size(block_id)
+	var block_size := BlockDB.get_base_size(block_id)
 	if BlockDB.normalize_rotation(block_id, rotation_index) % 2 != 0:
 		block_size = Vector2i(block_size.y, block_size.x)
 	var result: Array[Vector2i] = []

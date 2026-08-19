@@ -188,7 +188,7 @@ func create_preview_block() -> void:
 	)
 	if preview_block == null:
 		return
-	preview_block.block_id = selected_block.block_id
+	preview_block.configure_block_id(selected_block.block_id)
 	active_turret.add_child(preview_block)
 	preview_block.process_mode = Node.PROCESS_MODE_DISABLED
 	_disable_preview_features(preview_block)
@@ -203,7 +203,7 @@ func place_block() -> void:
 	var candidate := scene.instantiate() as Block
 	if candidate == null:
 		return
-	candidate.block_id = selected_block.block_id
+	candidate.configure_block_id(selected_block.block_id)
 	candidate.update_turret_transform(active_turret, preview_cell, preview_rotation)
 	var can_place := active_turret.can_place_block(candidate, preview_cell)
 	candidate.free()

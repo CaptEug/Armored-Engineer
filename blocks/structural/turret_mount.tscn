@@ -17,7 +17,6 @@ region = Rect2(48, 144, 48, 48)
 [node name="TurretMount3x3" type="Node2D" unique_id=1788194205 node_paths=PackedStringArray("turret_ring")]
 script = ExtResource("1_script")
 turret_ring = NodePath("TurretRing")
-size = Vector2i(3, 3)
 armor_max_hp = 300.0
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=510273014]

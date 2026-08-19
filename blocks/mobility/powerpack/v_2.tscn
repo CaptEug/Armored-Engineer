@@ -14,7 +14,6 @@ region = Rect2(16, 64, 16, 32)
 script = ExtResource("1_wdfkh")
 armor_max_hp = 140.0
 max_power = 1000.0
-size = Vector2i(1, 2)
 metadata/_custom_type_script = "uid://bicc471ql4ger"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=145307305]

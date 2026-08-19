@@ -97,7 +97,7 @@ func refresh_union_visual() -> void:
 			_union_visual_root = Node2D.new()
 			_union_visual_root.name = "UnionVisual"
 			add_child(_union_visual_root)
-	var base_size := BlockDB.get_size(block_id)
+	var base_size := BlockDB.get_base_size(block_id)
 	BlockVisualSystem.apply_rectangle_merge_to_node(
 		_union_visual_root,
 		_union_source_atlas,

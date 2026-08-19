@@ -26,7 +26,7 @@ static func generate_default_structures(gamemap: GameMap) -> Dictionary:
 			"The Vehicle Bay block is unavailable for world structures."
 		)
 
-	var unit_size := BlockDB.get_size(vehicle_bay_id)
+	var unit_size := BlockDB.get_base_size(vehicle_bay_id)
 	var anchors: Array[Vector2i] = []
 	for row in range(vehicle_bay_ROWS):
 		for column in range(vehicle_bay_COLUMNS):
@@ -185,7 +185,7 @@ static func _erase_structure_footprint(
 	anchors: Array[Vector2i],
 	block_id: int
 ) -> void:
-	var unit_size := BlockDB.get_size(block_id)
+	var unit_size := BlockDB.get_base_size(block_id)
 	var destroyed := {}
 	for anchor_offset: Vector2i in anchors:
 		for y in range(unit_size.y):

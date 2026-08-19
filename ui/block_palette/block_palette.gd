@@ -7,7 +7,7 @@ enum Context {
 	TURRET,
 }
 
-@export_enum("vehicle", "world") var host_name := BlockDB.HOST_VEHICLE
+@export_enum("vehicle", "world", "turret") var host_name := BlockDB.HOST_VEHICLE
 @export var constructed_only := true
 
 var blocks: Array[Block] = []
@@ -15,7 +15,6 @@ var selected_block : Block
 var zoom:int = 2
 var max_zoom:int = 4
 var min_zoom:int = 1
-var turret_mode := false
 var context := Context.VEHICLE
 
 
@@ -58,40 +57,24 @@ func set_turret_mode(enabled: bool) -> void:
 
 func set_context(new_context: Context) -> void:
 	context = new_context
-	turret_mode = context == Context.TURRET
-	host_name = (
-		BlockDB.HOST_WORLD
-		if context == Context.BUILDING
-		else BlockDB.HOST_VEHICLE
-	)
+	match context:
+		Context.BUILDING:
+			host_name = BlockDB.HOST_WORLD
+		Context.TURRET:
+			host_name = BlockDB.HOST_TURRET
+		_:
+			host_name = BlockDB.HOST_VEHICLE
 	selected_block = null
 	for block: Block in blocks:
-		block.visible = (
-			_is_turret_block_allowed(block)
-			if turret_mode
-			else _is_available(block)
-		)
+		block.visible = _is_available(block)
 	for child: Node in get_children():
 		var button := child as BlockButton
 		if button != null:
-			button.visible = (
-				_is_turret_block_allowed(button.block)
-				if turret_mode
-				else _is_available(button.block)
-			)
+			button.visible = _is_available(button.block)
 
 
 func clear_selection() -> void:
 	selected_block = null
-
-
-func _is_turret_block_allowed(block: Block) -> bool:
-	return (
-		block != null
-		and BlockDB.is_constructed(block.block_id)
-		and not block is Track
-		and not block is TurretMount
-	)
 
 
 func _on_zoom_in_button_pressed():

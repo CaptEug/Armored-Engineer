@@ -478,7 +478,7 @@ func create_preview_block() -> void:
 	preview_block = preview_scene.instantiate() as Block
 	if preview_block == null:
 		return
-	preview_block.block_id = selected_block.block_id
+	preview_block.configure_block_id(selected_block.block_id)
 	vehicle.add_child(preview_block)
 	preview_block.vehicle = vehicle
 	preview_block.set_process(false)
@@ -620,7 +620,7 @@ func _can_place_selected_block(block_scene: PackedScene) -> bool:
 	var candidate := block_scene.instantiate() as Block
 	if candidate == null:
 		return false
-	candidate.block_id = selected_block.block_id
+	candidate.configure_block_id(selected_block.block_id)
 	candidate.update_transform(vehicle, preview_cell, preview_rotation)
 	var can_place := (
 		vehicle.can_place_block(candidate, preview_cell)
@@ -880,7 +880,7 @@ func _construct_blueprint_record(record: Array) -> Dictionary:
 	var candidate := block_scene.instantiate() as Block
 	if candidate == null:
 		return {"ok": false, "reason": "blocked"}
-	candidate.block_id = block_id
+	candidate.configure_block_id(block_id)
 	if (
 		block_size != Vector2i.ZERO
 		and candidate is ExpandableBlock
@@ -1031,7 +1031,7 @@ func _blueprint_records_fit_workshop(
 		var candidate := block_scene.instantiate() as Block
 		if candidate == null:
 			return false
-		candidate.block_id = block_id
+		candidate.configure_block_id(block_id)
 		var saved_size := VehicleBlueprint._get_record_size(record)
 		if (
 			saved_size != Vector2i.ZERO

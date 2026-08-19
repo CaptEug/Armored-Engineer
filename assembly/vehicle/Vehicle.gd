@@ -324,7 +324,9 @@ func place_block(
 	var block := block_scene.instantiate() as Block
 	if block == null:
 		return false
-	block.block_id = BlockDB.get_id_for_scene(block_scene.resource_path)
+	block.configure_block_id(
+		BlockDB.get_id_for_scene(block_scene.resource_path)
+	)
 	if (
 		block.block_id == BlockDB.INVALID_BLOCK_ID
 		or not BlockDB.can_place_on(
@@ -1076,7 +1078,7 @@ func refresh_blueprint_ghosts() -> void:
 		var ghost := scene.instantiate() as Block
 		if ghost == null:
 			continue
-		ghost.block_id = int(record[0])
+		ghost.configure_block_id(int(record[0]))
 		var saved_size := VehicleBlueprint._get_record_size(record)
 		if (
 			saved_size != Vector2i.ZERO

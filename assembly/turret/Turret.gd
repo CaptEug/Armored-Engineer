@@ -69,10 +69,12 @@ func get_assembly_at(_cell: Vector2i) -> BlockAssembly:
 func can_place_block(block: Block, cell: Vector2i) -> bool:
 	if (
 		block == null
-		or block is Track
-		or block is TurretMount
 		or not BlockDB.has_block(block.block_id)
 		or not BlockDB.is_constructed(block.block_id)
+		or not BlockDB.can_place_on(
+			block.block_id,
+			BlockDB.HOST_TURRET
+		)
 	):
 		return false
 	block.origin_cell = cell
@@ -97,7 +99,9 @@ func place_block(
 	var block := block_scene.instantiate() as Block
 	if block == null:
 		return false
-	block.block_id = BlockDB.get_id_for_scene(block_scene.resource_path)
+	block.configure_block_id(
+		BlockDB.get_id_for_scene(block_scene.resource_path)
+	)
 	if block is ExpandableBlock:
 		var configured_size := block.size if block_size == Vector2i.ZERO else block_size
 		if not (block as ExpandableBlock).configure_union_size(configured_size):
@@ -237,7 +241,7 @@ func capture_save_data() -> Dictionary:
 			health,
 		]
 		var extra := {}
-		if block.size != BlockDB.get_size(block.block_id):
+		if block.size != BlockDB.get_base_size(block.block_id):
 			extra["size"] = [block.size.x, block.size.y]
 		var state := block.get_save_state()
 		if not state.is_empty():
@@ -355,7 +359,7 @@ func _block_fits_radius(block: Block) -> bool:
 
 func _get_configured_block_mass(block: Block) -> float:
 	var definition := BlockDB.get_block(block.block_id)
-	var base_size: Vector2i = definition.get("size", block.size)
+	var base_size := BlockDB.get_base_size(block.block_id)
 	var base_units := maxi(base_size.x * base_size.y, 1)
 	var configured_units := maxi(block.size.x * block.size.y, 1)
 	return (
